@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <json-c/json.h>
 
 // state of the system (written to or read from by devices)
@@ -45,6 +46,8 @@ struct oao_conf {
 	// array of oao_device objects
 	struct oao_device *devices;
 };
+
+#include "device.h"
 
 #endif
 

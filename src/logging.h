@@ -1,6 +1,6 @@
 // simplified from <https://github.com/rxi/log.c>
-#ifndef _LOGGING_H
-#define _LOGGING_H
+#ifndef _OPENAO_LOGGING_H
+#define _OPENAO_LOGGING_H
 
 #define LOG_USE_COLOR
 

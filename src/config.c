@@ -1,37 +1,65 @@
 #include "openao.h"
+#include "logging.h"
+#include "config.h"
 
-// populate devices uris and their parameters
+
 struct oao_conf read_config(const char *file)
 {
 	struct oao_conf ret;
 
 	log_info("Opening config file \"%s\"", file);
-	FILE *f = fopen(file, "r");
-	if (!f) {
-		log_error("Could not open config file.");
-		abort();
-	}
-	fseek(f, 0L, SEEK_END);
-	size_t sz = ftell(f);
-	rewind(f);
-
-	char *buf = calloc(sz, 1);
-	size_t n_read = fread(buf, 1, sz, f);
-	if (n_read != sz || n_read <= 0) {
-		log_error("Could not read config file.");
-		abort();
-	}
-
-	struct json_object *jobj = json_tokener_parse(buf);
+	struct json_object *jobj = json_object_from_file(file);
 	if (!jobj) {
-		log_error("Failed to parse config file.");
+		log_error(json_util_get_last_err());
 		abort();
 	}
-	json_object_object_foreach(jobj, key, val) {
-		printf("key: \"%s\"\n", key);
-		// TODO
-	}
 
+	json_object_object_foreach(jobj, tlkey, sub1) {
+		// parse top-level keys
+		if (!strcmp(tlkey, "pipeline")) {
+			// parse devices in pipeline
+			ret.n_devices = json_object_array_length(sub1);
+			ret.devices = (struct oao_device *)calloc(
+				ret.n_devices, sizeof(struct oao_device)
+			);
+			log_info("Seeing %d devices", ret.n_devices);
+			for (size_t idx=0; idx<ret.n_devices; idx++) {
+				json_object *sub2 = json_object_array_get_idx(
+					sub1, idx
+				);
+				json_object_object_foreach(sub2, sub3, sub4) {
+					if (!strcmp(sub3, "uri")) {
+						const char *uri =
+							json_object_get_string(
+								sub4
+							);
+						ret.devices[idx].uri =
+							strdup(uri);
+						log_info("Found device with "
+							"uri: %s",
+							ret.devices[idx].uri
+						);
+					} else if (!strcmp(sub3, "params")) {
+						log_info("Found params for "
+							"uri: %s",
+							ret.devices[idx].uri
+						);
+						// take ownership of param obj
+						ret.devices[idx].params =
+							json_object_get(sub4);
+					} else {
+						log_error("Unknown device key: "
+							"\"%s\"", sub3
+						);
+						abort();
+					}
+				}
+			}
+		} else {
+			log_error("Unknown config key: \"%s\"", tlkey);
+			abort();
+		}
+	}
 
 	log_info("Config file parsed");
 	return ret;
