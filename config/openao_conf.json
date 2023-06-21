@@ -1,0 +1,20 @@
+{
+	"pipeline": [
+		"vonkarman_screen",
+		"logger"
+	],
+	"devices": [
+		{"vonkarman_screen": {
+			"uri": "openao:vonkarman_screen",
+			"params": {
+				"Cn2": "1E-17",
+				"pitch": "0.01",
+				"width": "1024"
+			}
+		}},
+		{"logger": {
+			"uri": "openao:logger"
+		}}
+	]
+}
+
