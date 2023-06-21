@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	while (!done) {
 		for (size_t idx=0; idx<conf.n_devices; idx++) {
 			struct oao_device *dev = &conf.devices[idx];
-			dev->process(dev);
+			dev->process(dev, &state);
 		}
 		done = 1;
 	}

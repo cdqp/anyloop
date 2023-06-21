@@ -12,10 +12,10 @@ void logger_init(struct oao_device *self)
 }
 
 
-void logger_process(struct oao_device *self)
+void logger_process(struct oao_device *self, struct oao_state *state)
 {
-	log_trace("logger processed");
 	log_debug("logger_process called");
+	log_trace("logger processed");
 	return;
 }
 
