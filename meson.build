@@ -11,9 +11,10 @@ project_source_files = [
 	'src/device.c',
 	'src/logging.c',
 	'src/openao.c',
+	'src/devices/delay.c',
 	'src/devices/file_sink.c',
 	'src/devices/logger.c',
-	'src/devices/vonkarman_screen.c',
+	'src/devices/vonkarman_stream.c',
 ]
 
 incdir = include_directories('src')

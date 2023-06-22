@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 				dev->process(dev, &state);
 			}
 		}
-		done = 1;
+		//done = 1;
 	}
 
 	// TODO: sigint handling

@@ -1,7 +1,7 @@
 {
 	"pipeline": [
 		{
-			"uri": "openao:vonkarman_screen",
+			"uri": "openao:vonkarman_stream",
 			"params": {
 				"r0": "0.02",
 				"L0": "4.0",
@@ -11,6 +11,13 @@
 		},
 		{
 			"uri": "openao:logger"
+		},
+		{
+			"uri": "openao:delay",
+			"params": {
+				"s": "0",
+				"ns": "500000000"
+			}
 		},
 		{
 			"uri": "openao:file_sink",

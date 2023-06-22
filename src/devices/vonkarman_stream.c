@@ -10,7 +10,7 @@
 #include <json-c/json.h>
 #include "openao.h"
 #include "logging.h"
-#include "vonkarman_screen.h"
+#include "vonkarman_stream.h"
 
 
 /** Return the Fourier amplitude (not power) of the von Kármán spectrum.
@@ -85,7 +85,7 @@ void _backward_fft(double data[], size_t stride, size_t n)
  */
 int _generate_phase_screen(struct oao_device *self)
 {
-	struct oao_vonkarman_screen_data *data = self->device_data;
+	struct oao_vonkarman_stream_data *data = self->device_data;
 	// We assume we're making a square phase screen; this is generally a
 	// good idea (see https://doi.org/10.1364/AO.37.004605), but this could
 	// be changed here if one wishes.
@@ -117,6 +117,7 @@ int _generate_phase_screen(struct oao_device *self)
 	}
 	// set the 0,0 element to zero (it's nonphysical)
 	gsl_matrix_set(data->phase_screen, 0, 0, 0.0);
+	log_trace("Generated Fourier components");
 	// perform a 2D backward-fft by doing a bunch of 1D backward ffts
 	for (size_t idx=0; idx<M; idx++) {
 		// backward fft each row
@@ -144,14 +145,14 @@ int _generate_phase_screen(struct oao_device *self)
 }
 
 
-int vonkarman_screen_init(struct oao_device *self)
+int vonkarman_stream_init(struct oao_device *self)
 {
-	self->process = &vonkarman_screen_process;
-	self->close = &vonkarman_screen_close;
-	self->device_data = (struct oao_vonkarman_screen_data *)calloc(
-		1, sizeof(struct oao_vonkarman_screen_data)
+	self->process = &vonkarman_stream_process;
+	self->close = &vonkarman_stream_close;
+	self->device_data = (struct oao_vonkarman_stream_data *)calloc(
+		1, sizeof(struct oao_vonkarman_stream_data)
 	);
-	struct oao_vonkarman_screen_data *data = self->device_data;
+	struct oao_vonkarman_stream_data *data = self->device_data;
 	// parse the params json into our data struct
 	json_object_object_foreach(self->params, key, val) {
 		if (!strcmp(key, "L0")) {
@@ -169,7 +170,7 @@ int vonkarman_screen_init(struct oao_device *self)
 			);
 			log_trace("width = %u", data->width);
 		} else {
-			log_warn("Unkown parameter \"%s\"", key);
+			log_warn("Unknown parameter \"%s\"", key);
 		}
 	}
 	// make sure we didn't miss any params
@@ -185,28 +186,31 @@ int vonkarman_screen_init(struct oao_device *self)
 		log_error("Failed to generate phase screen.");
 		return -1;
 	}
-	log_trace("vonkarman_screen initialized");
+	log_trace("vonkarman_stream initialized");
 	return 0;
 }
 
 
-int vonkarman_screen_process(struct oao_device *self, struct oao_state *state)
+int vonkarman_stream_process(struct oao_device *self, struct oao_state *state)
 {
-	log_trace("vonkarman_screen processed");
+	// TODO: move along the screen. probably don't calculate wind speed,
+	// just rely on a delay device. maybe take an initial position and a
+	// direction as additional params
+	log_trace("vonkarman_stream processed");
 	return 0;
 }
 
 
-int vonkarman_screen_close(struct oao_device *self)
+int vonkarman_stream_close(struct oao_device *self)
 {
 	json_object_object_foreach(self->params, key, _) {
 		json_object_object_del(self->params, key);
 	}
 	free(self->params); self->params = 0;
-	struct oao_vonkarman_screen_data *data = self->device_data;
+	struct oao_vonkarman_stream_data *data = self->device_data;
 	gsl_matrix_free(data->phase_screen); data->phase_screen = 0;
 	free(data); self->device_data = 0;
-	log_trace("vonkarman_screen closed");
+	log_trace("vonkarman_stream closed");
 	return 0;
 }
 
