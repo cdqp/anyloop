@@ -43,8 +43,7 @@ int delay_process(struct oao_device *self, struct oao_state *state)
 
 int delay_close(struct oao_device *self)
 {
-	struct oao_delay_data *data = self->device_data;
-	free(data); self->device_data = 0;
+	free(self->device_data); self->device_data = 0;
 	log_info("delay closed");
 	return 0;
 }

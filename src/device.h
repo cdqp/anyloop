@@ -4,6 +4,7 @@
 #include "devices/delay.h"
 #include "devices/file_sink.h"
 #include "devices/logger.h"
+#include "devices/udp_sink.h"
 #include "devices/vonkarman_stream.h"
 
 const static struct {
@@ -21,6 +22,10 @@ const static struct {
 	{
 		"openao:logger",
 		logger_init
+	},
+	{
+		"openao:udp_sink",
+		udp_sink_init
 	},
 	{
 		"openao:vonkarman_stream",

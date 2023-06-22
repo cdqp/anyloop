@@ -10,19 +10,16 @@
 			}
 		},
 		{
-			"uri": "openao:logger"
+			"uri": "openao:udp_sink",
+			"params": {
+				"port": "64730"
+			}
 		},
 		{
 			"uri": "openao:delay",
 			"params": {
 				"s": "0",
 				"ns": "500000000"
-			}
-		},
-		{
-			"uri": "openao:file_sink",
-			"params": {
-				"filename": "out.bin"
 			}
 		}
 	]
