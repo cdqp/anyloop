@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gsl/gsl_matrix.h>
 #include <json-c/json.h>
 
 // state of the system (written to or read from by devices)
@@ -12,10 +13,7 @@ struct oao_state {
 	// matrix of phases [rad]:
 	// (for example, a wavefront sensor might write to this, and a
 	// deformable mirror might read from it)
-	double **phases;
-	// rows and columns in phases:
-	size_t M;
-	size_t N;
+	gsl_matrix phases;
 	// physical distance between successive rows and columns
 	double pitch_y;
 	double pitch_x;
@@ -30,13 +28,13 @@ struct oao_device {
 	// params from json
 	struct json_object *params;
 	// initializer function
-	void (*init)(struct oao_device *self);
+	int (*init)(struct oao_device *self);
 	// function that's called once every loop when it's the device's turn
-	void (*process)(struct oao_device *self, struct oao_state *state);
+	int (*process)(struct oao_device *self, struct oao_state *state);
 	// destructor function
-	void (*close)(struct oao_device *self);
+	int (*close)(struct oao_device *self);
 	// optional pointer to allow devices to store their parameters and such
-	void *device_mem;
+	void *device_data;
 };
 
 // main config struct

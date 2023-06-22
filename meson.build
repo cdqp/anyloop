@@ -11,6 +11,7 @@ project_source_files = [
 	'src/device.c',
 	'src/logging.c',
 	'src/openao.c',
+	'src/devices/file_sink.c',
 	'src/devices/logger.c',
 	'src/devices/vonkarman_screen.c',
 ]

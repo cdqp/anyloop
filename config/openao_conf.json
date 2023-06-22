@@ -4,12 +4,19 @@
 			"uri": "openao:vonkarman_screen",
 			"params": {
 				"Cn2": "1E-17",
+				"L": "20E3",
 				"pitch": "0.01",
 				"width": "1024"
 			}
 		},
 		{
 			"uri": "openao:logger"
+		},
+		{
+			"uri": "openao:file_sink",
+			"params": {
+				"filename": "out.bin"
+			}
 		}
 	]
 }

@@ -3,26 +3,25 @@
 #include "logger.h"
 
 
-void logger_init(struct oao_device *self)
+int logger_init(struct oao_device *self)
 {
 	self->process = &logger_process;
 	self->close = &logger_close;
-	log_trace("logger initialized");
-	return;
+	log_info("logger initialized");
+	return 0;
 }
 
 
-void logger_process(struct oao_device *self, struct oao_state *state)
+int logger_process(struct oao_device *self, struct oao_state *state)
 {
-	log_debug("logger_process called");
-	log_trace("logger processed");
-	return;
+	log_info("logger processed");
+	return 0;
 }
 
 
-void logger_close(struct oao_device *self)
+int logger_close(struct oao_device *self)
 {
-	log_trace("logger closed");
-	return;
+	log_info("logger closed");
+	return 0;
 }
 

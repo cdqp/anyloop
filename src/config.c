@@ -1,3 +1,4 @@
+#include <json-c/json.h>
 #include "openao.h"
 #include "logging.h"
 #include "config.h"
@@ -62,6 +63,12 @@ struct oao_conf read_config(const char *file)
 	}
 
 	log_info("Config file parsed");
+
+	// cleanup
+	json_object_object_foreach(jobj, key, _) {
+		json_object_object_del(jobj, key);
+	}
+	free(jobj); jobj = 0;
 	return ret;
 }
 
