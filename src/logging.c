@@ -6,7 +6,7 @@ static struct {
 	log_lockfn lock;
 	int level;
 	bool quiet;
-} L;
+} log_status;
 
 static const char *level_strings[] = {
 	"TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"
@@ -18,46 +18,63 @@ static const char *level_colors[] = {
 };
 #endif
 
-static void lock(void)   {
-	if (L.lock) { L.lock(true, L.udata); }
+static void lock(void)
+{
+	if (log_status.lock)
+		log_status.lock(true, log_status.udata);
 }
 
 
-static void unlock(void) {
-	if (L.lock) { L.lock(false, L.udata); }
+static void unlock(void)
+{
+	if (log_status.lock)
+		log_status.lock(false, log_status.udata);
 }
 
 
-const char* log_level_string(int level) {
+const char* log_level_string(int level)
+{
 	return level_strings[level];
 }
 
 
-void log_set_lock(log_lockfn fn, void *udata) {
-	L.lock = fn;
-	L.udata = udata;
+void log_set_lock(log_lockfn fn, void *udata)
+{
+	log_status.lock = fn;
+	log_status.udata = udata;
 }
 
 
-void log_set_level(int level) {
-	L.level = level;
+void log_set_level(int level)
+{
+	log_status.level = level;
 }
 
 
-void log_set_quiet(bool enable) {
-	L.quiet = enable;
+int log_get_level()
+{
+	return log_status.level;
 }
 
-static void init_event(struct log_event *ev, void *udata) {
+
+void log_set_quiet(bool enable)
+{
+	log_status.quiet = enable;
+}
+
+
+static void init_event(struct log_event *ev, void *udata)
+{
 	if (!ev->time) {
-		time_t t = time(NULL);
+		time_t t = time(0);
 		ev->time = localtime(&t);
 	}
 	ev->udata = udata;
 }
 
 
-void log_log(int level, const char *file, int line, const char *fmt, ...) {
+void log_log(int level, const char *file, int line, const char *fmt, ...)
+{
 	struct log_event ev = {
 		.fmt   = fmt,
 		.file  = file,
@@ -67,7 +84,7 @@ void log_log(int level, const char *file, int line, const char *fmt, ...) {
 
 	lock();
 
-	if (!L.quiet && level >= L.level) {
+	if (!log_status.quiet && level >= log_status.level) {
 		init_event(&ev, stderr);
 		va_start(ev.ap, fmt);
 		char buf[16];

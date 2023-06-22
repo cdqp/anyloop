@@ -34,6 +34,7 @@ enum { LOG_TRACE, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_FATAL };
 const char* log_level_string(int level);
 void log_set_lock(log_lockfn fn, void *udata);
 void log_set_level(int level);
+int log_get_level();
 void log_set_quiet(bool enable);
 
 void log_log(int level, const char *file, int line, const char *fmt, ...);
