@@ -42,21 +42,27 @@ double _karman_spec(double L0, double r0, double Gx, double Gy,
 void _generate_phase_screen(struct oao_device *self)
 {
 	struct oao_vonkarman_screen_data *data = self->device_data;
-	data->phase_screen = gsl_matrix_alloc(data->width, data->width);
 	/* we fill a matrix with random phases. kind of. we don't need the
 	 * phases to be complex, because the ifft later will make them
 	 * conjugate-symmetric. however, we do need to make sure their rms is
 	 * only 1/sqrt(2), rather than 1, because the symmetrization adds an
-	 * imaginary part.
+	 * imaginary part. oh, and we multiply them by the spectrum as we go.
 	 */
+	data->phase_screen = gsl_matrix_alloc(data->width, data->width);
 	for (size_t idx=0; idx<data->phase_screen->size1; idx++) {
 		for (size_t jdx=0; jdx<data->phase_screen->size2; jdx++) {
+			// karman spectrum amplitude
+			double amp = _karman_spec(
+				data->L0, data->r0,
+				data->width * data->pitch,
+				data->width * data->pitch,
+				idx, jdx
+			);
 			gsl_matrix_set(data->phase_screen, idx, jdx,
-				gsl_ran_gaussian(data->rng, 1.0/sqrt(2))
+				gsl_ran_gaussian(data->rng, 1.0/sqrt(2)) * amp
 			);
 		}
 	}
-	// TODO: multiply by spectrum
 	// TODO: ifft
 }
 
@@ -71,12 +77,12 @@ int vonkarman_screen_init(struct oao_device *self)
 	struct oao_vonkarman_screen_data *data = self->device_data;
 	// parse the params json into our data struct
 	json_object_object_foreach(self->params, key, val) {
-		if (!strcmp(key, "Cn2")) {
-			data->Cn2 = strtod(json_object_get_string(val), 0);
-			log_trace("Cn2 = %E", data->Cn2);
-		} else if (!strcmp(key, "L")) {
-			data->L= strtod(json_object_get_string(val), 0);
-			log_trace("L = %E", data->L);
+		if (!strcmp(key, "L0")) {
+			data->L0 = strtod(json_object_get_string(val), 0);
+			log_trace("L0 = %E", data->L0);
+		} else if (!strcmp(key, "r0")) {
+			data->r0 = strtod(json_object_get_string(val), 0);
+			log_trace("r0 = %E", data->r0);
 		} else if (!strcmp(key, "pitch")) {
 			data->pitch = strtod(json_object_get_string(val), 0);
 			log_trace("pitch = %E", data->pitch);
@@ -90,8 +96,8 @@ int vonkarman_screen_init(struct oao_device *self)
 		}
 	}
 	// make sure we didn't miss any params
-	if (!data->Cn2 || !data->L || !data->pitch || !data->width) {
-		log_error("You must provide all params: Cn2, L, pitch, width.");
+	if (!data->L0 || !data->r0 || !data->pitch || !data->width) {
+		log_error("You must provide all params: L0, r0, pitch, width.");
 		return -1;
 	}
 	// set up the rng
@@ -106,7 +112,6 @@ int vonkarman_screen_init(struct oao_device *self)
 
 int vonkarman_screen_process(struct oao_device *self, struct oao_state *state)
 {
-	log_trace("%E", _karman_spec(2.0,0.02,50.0,50.0,0,1));
 	log_trace("vonkarman_screen processed");
 	return 0;
 }

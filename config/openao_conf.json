@@ -3,8 +3,8 @@
 		{
 			"uri": "openao:vonkarman_screen",
 			"params": {
-				"Cn2": "1E-17",
-				"L": "20E3",
+				"r0": "0.02",
+				"L0": "2.0",
 				"pitch": "0.01",
 				"width": "1024"
 			}

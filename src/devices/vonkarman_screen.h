@@ -6,8 +6,8 @@
 #include <gsl/gsl_rng.h>
 
 struct oao_vonkarman_screen_data {
-	double Cn2;
-	double L;
+	double r0;
+	double L0;
 	double pitch;
 	size_t width;
 	gsl_rng *rng;
