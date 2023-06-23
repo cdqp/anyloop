@@ -14,7 +14,9 @@ int delay_init(struct oao_device *self)
 	struct timespec *ts = self->device_data;
 	json_object_object_foreach(self->params, key, val) {
 		// parse parameters
-		if (!strcmp(key, "s")) {
+		if (key[0] == '_') {
+			// keys starting with _ are comments
+		} else if (!strcmp(key, "s")) {
 			ts->tv_sec = (time_t) strtoumax(
 				json_object_get_string(val), 0, 0
 			);
@@ -28,7 +30,6 @@ int delay_init(struct oao_device *self)
 			log_warn("Unknown parameter \"%s\"", key);
 		}
 	}
-	log_info("delay initialized");
 	return 0;
 }
 
@@ -36,7 +37,6 @@ int delay_init(struct oao_device *self)
 int delay_process(struct oao_device *self, struct oao_state *state)
 {
 	nanosleep((struct timespec *)self->device_data, 0);
-	log_trace("delay processed");
 	return 0;
 }
 
@@ -44,7 +44,6 @@ int delay_process(struct oao_device *self, struct oao_state *state)
 int delay_close(struct oao_device *self)
 {
 	free(self->device_data); self->device_data = 0;
-	log_info("delay closed");
 	return 0;
 }
 

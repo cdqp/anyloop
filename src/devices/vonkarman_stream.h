@@ -14,6 +14,7 @@ struct oao_vonkarman_stream_data {
 	gsl_matrix *phase_screen;
 	size_t cur_idx;
 	size_t cur_jdx;
+	int cur_step;
 };
 
 // initialize vonkarman_stream device

@@ -11,13 +11,15 @@ struct oao_conf read_config(const char *file)
 	log_info("Opening config file \"%s\"", file);
 	struct json_object *jobj = json_object_from_file(file);
 	if (!jobj) {
-		log_error(json_util_get_last_err());
-		abort();
+		log_fatal(json_util_get_last_err());
+		exit(1);
 	}
 
 	json_object_object_foreach(jobj, tlkey, sub1) {
 		// parse top-level keys
-		if (!strcmp(tlkey, "pipeline")) {
+		if (tlkey[0] == '_') {
+			// keys starting with _ are comments
+		} else if (!strcmp(tlkey, "pipeline")) {
 			// parse devices in pipeline
 			ret.n_devices = json_object_array_length(sub1);
 			ret.devices = (struct oao_device *)calloc(
@@ -29,7 +31,9 @@ struct oao_conf read_config(const char *file)
 					sub1, idx
 				);
 				json_object_object_foreach(sub2, sub3, sub4) {
-					if (!strcmp(sub3, "uri")) {
+					if (sub3[0] == '_') {
+						// it's a comment
+					} else if (!strcmp(sub3, "uri")) {
 						const char *uri =
 							json_object_get_string(
 								sub4
@@ -49,16 +53,14 @@ struct oao_conf read_config(const char *file)
 						ret.devices[idx].params =
 							json_object_get(sub4);
 					} else {
-						log_error("Unknown device key: "
-							"\"%s\"", sub3
+						log_warn("Unknown pipeline "
+							"key: \"%s\"", sub3
 						);
-						abort();
 					}
 				}
 			}
 		} else {
-			log_error("Unknown config key: \"%s\"", tlkey);
-			abort();
+			log_warn("Unknown config key: \"%s\"", tlkey);
 		}
 	}
 

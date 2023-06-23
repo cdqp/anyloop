@@ -17,9 +17,11 @@ int init_device(struct oao_device *dev)
 	}
 	if (dev->init) {
 		log_info("Initializing %s", dev->uri);
-		return dev->init(dev);
+		int ret = dev->init(dev);
+		return ret;
 	} else {
 		// assume device doesn't need initialization
+		log_info("Not initializing %s", dev->uri);
 		return 0;
 	}
 }

@@ -65,7 +65,7 @@ void _backward_fft(double data[], size_t stride, size_t n)
 		gsl_fft_real_workspace_free(ws);
 	}
 	if (err) {
-		log_error("backward fft failed, gsl_errno=%d\n", err);
+		log_error("Backward fft failed, gsl_errno=%d\n", err);
 	}
 	return;
 }
@@ -155,7 +155,9 @@ int vonkarman_stream_init(struct oao_device *self)
 	struct oao_vonkarman_stream_data *data = self->device_data;
 	// parse the params json into our data struct
 	json_object_object_foreach(self->params, key, val) {
-		if (!strcmp(key, "L0")) {
+		if (key[0] == '_') {
+			// keys starting with _ are comments
+		} else if (!strcmp(key, "L0")) {
 			data->L0 = strtod(json_object_get_string(val), 0);
 			log_trace("L0 = %E", data->L0);
 		} else if (!strcmp(key, "r0")) {
@@ -186,7 +188,6 @@ int vonkarman_stream_init(struct oao_device *self)
 		log_error("Failed to generate phase screen.");
 		return -1;
 	}
-	log_trace("vonkarman_stream initialized");
 	return 0;
 }
 
@@ -195,8 +196,14 @@ int vonkarman_stream_process(struct oao_device *self, struct oao_state *state)
 {
 	// TODO: move along the screen. probably don't calculate wind speed,
 	// just rely on a delay device. maybe take an initial position and a
-	// direction as additional params
-	log_trace("vonkarman_stream processed");
+	// step size as additional params
+	struct oao_vonkarman_stream_data *data = self->device_data;
+	// housekeeping on the info struct
+	state->info.type = OAO_PHASES;
+	state->info.log_dim.y = data->phase_screen->size1;
+	state->info.log_dim.x = data->phase_screen->size2;
+	state->info.pitch.x = data->pitch;
+	state->info.pitch.x = data->pitch;
 	return 0;
 }
 
@@ -210,7 +217,6 @@ int vonkarman_stream_close(struct oao_device *self)
 	struct oao_vonkarman_stream_data *data = self->device_data;
 	gsl_matrix_free(data->phase_screen); data->phase_screen = 0;
 	free(data); self->device_data = 0;
-	log_trace("vonkarman_stream closed");
 	return 0;
 }
 

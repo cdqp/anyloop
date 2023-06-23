@@ -16,7 +16,9 @@ int file_sink_init(struct oao_device *self)
 	struct oao_file_sink_data *data = self->device_data;
 	json_object_object_foreach(self->params, key, val) {
 		// parse parameters
-		if (!strcmp(key, "filename")) {
+		if (key[0] == '_') {
+			// keys starting with _ are comments
+		} else if (!strcmp(key, "filename")) {
 			data->filename = strdup(json_object_get_string(val));
 			log_trace("filename = %s", data->filename);
 		} else {
@@ -27,7 +29,6 @@ int file_sink_init(struct oao_device *self)
 		log_error("You must provide the filename parameter.");
 		return 1;
 	}
-	log_trace("file_sink initialized");
 	return 0;
 }
 
@@ -37,10 +38,9 @@ int file_sink_process(struct oao_device *self, struct oao_state *state)
 	// TODO: error checking
 	struct oao_file_sink_data *data = self->device_data;
 	FILE *fp = fopen(data->filename, "wb");
-	gsl_matrix_fwrite(fp, &state->phases);
+	gsl_block_fwrite(fp, &state->block);
 	fflush(fp);
 	fclose(fp);
-	log_trace("file_sink processed");
 	return 0;
 }
 
@@ -54,7 +54,6 @@ int file_sink_close(struct oao_device *self)
 	struct oao_file_sink_data *data = self->device_data;
 	free(data->filename); data->filename = 0;
 	free(data); self->device_data = 0;
-	log_trace("file_sink closed");
 	return 0;
 }
 

@@ -10,8 +10,16 @@
 			}
 		},
 		{
+			"uri": "openao:delay",
+			"params": {
+				"s": "0",
+				"ns": "200000000"
+			}
+		},
+		{
 			"uri": "openao:udp_sink",
 			"params": {
+				"ip": "127.0.0.1",
 				"port": "64730"
 			}
 		},
@@ -19,7 +27,15 @@
 			"uri": "openao:delay",
 			"params": {
 				"s": "0",
-				"ns": "500000000"
+				"ns": "800000000",
+				"_comment": "hi"
+			},
+			"_comment": {
+				"1": "this second delay is here to demonstrate",
+				"2": "that (1) you can add comments via extra",
+				"3": "json keys, and (2) that you can have",
+				"4": "multiple copies of a device with",
+				"5": "different parameters"
 			}
 		}
 	]
