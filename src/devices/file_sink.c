@@ -38,6 +38,9 @@ int file_sink_process(struct oao_device *self, struct oao_state *state)
 	// TODO: error checking
 	struct oao_file_sink_data *data = self->device_data;
 	FILE *fp = fopen(data->filename, "wb");
+	// write the file header
+	fwrite(&state->header, sizeof(struct oao_header), 1, fp);
+	// write the data
 	gsl_block_fwrite(fp, &state->block);
 	fflush(fp);
 	fclose(fp);

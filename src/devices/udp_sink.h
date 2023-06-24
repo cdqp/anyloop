@@ -3,11 +3,15 @@
 
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/uio.h>
 #include "openao.h"
 
 struct oao_udp_sink_data {
 	int sock;
+	// destination
 	struct sockaddr_in dest_sa;
+	// iovec for writev so we can write the header and the data in one go
+	struct iovec iovecs[2];
 };
 
 // initialize udp_sink device

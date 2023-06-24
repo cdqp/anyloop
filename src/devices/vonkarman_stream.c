@@ -199,11 +199,11 @@ int vonkarman_stream_process(struct oao_device *self, struct oao_state *state)
 	// step size as additional params
 	struct oao_vonkarman_stream_data *data = self->device_data;
 	// housekeeping on the info struct
-	state->info.type = OAO_PHASES;
-	state->info.log_dim.y = data->phase_screen->size1;
-	state->info.log_dim.x = data->phase_screen->size2;
-	state->info.pitch.x = data->pitch;
-	state->info.pitch.x = data->pitch;
+	state->header.type = OAO_PHASES;
+	state->header.log_dim.y = data->phase_screen->size1;
+	state->header.log_dim.x = data->phase_screen->size2;
+	state->header.pitch.y = data->pitch;
+	state->header.pitch.x = data->pitch;
 	return 0;
 }
 

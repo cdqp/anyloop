@@ -25,8 +25,10 @@ enum oao_blocktype {
 	// add more as necessary
 };
 
-// information about data in block
-struct oao_blockinfo {
+// saved data files will use this as a header (see file_sink_process())
+// and it's also good to have the rest of this info for devices
+struct oao_header {
+	char magic[8];	// = "OAO_DATA"
 	// type of data written to block
 	enum oao_blocktype type;
 	// logical dimensions (e.g. of a matrix)
@@ -43,8 +45,14 @@ struct oao_blockinfo {
 	} pitch;
 };
 
+
 // state of the system (written to or read from by devices)
 struct oao_state {
+	// header that includes magic number and info on data in the block
+	// the magic number is for clarity when writing to a file (or internet
+	// packet), whereas the other info is for devices that want to know what
+	// they're processing
+	struct oao_header header;
 	// gsl_block of data in the pipeline:
 	// (for example, a wavefront sensor might write a vector of phases to
 	// this, and a deformable mirror might read a vector command from it)
@@ -52,8 +60,6 @@ struct oao_state {
 	// methods in gsl:
 	// https://git.savannah.gnu.org/cgit/gsl.git/tree/matrix/init_source.c
 	gsl_block block;
-	// type of data in block
-	struct oao_blockinfo info;
 	// a status enum, in case devices need to selectively act differently
 	enum oao_status status;
 	// add more parameters as needed
@@ -61,8 +67,8 @@ struct oao_state {
 
 // device struct---how this is interpreted is up to the device module
 struct oao_device {
-	// uri for device (e.g. ip, serial, etc.)
-	// some custom devices will start with the "openao" scheme
+	// uri for device
+	// most devices will start with the "openao" scheme
 	char *uri;
 	// params from json
 	struct json_object *params;

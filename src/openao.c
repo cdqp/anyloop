@@ -1,4 +1,5 @@
 #include <signal.h>
+#include <string.h>
 #include "openao.h"
 #include "logging.h"
 #include "config.h"
@@ -39,6 +40,9 @@ int main(int argc, char *argv[])
 		log_fatal("Failed to attach signal handler to SIGINT.");
 		return 1;
 	}
+
+	// copy magic number to header
+	strcpy(state.header.magic, "OAO_DATA");
 
 	// TODO: in addition to config file, parse a log level param
 	// (probably want getopt?)

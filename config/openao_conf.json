@@ -24,6 +24,12 @@
 			}
 		},
 		{
+			"uri": "openao:file_sink",
+			"params": {
+				"filename": "data.oao"
+			}
+		},
+		{
 			"uri": "openao:delay",
 			"params": {
 				"s": "0",
