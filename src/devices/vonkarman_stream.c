@@ -258,9 +258,8 @@ int vonkarman_stream_init(struct oao_device *self)
 
 int vonkarman_stream_process(struct oao_device *self, struct oao_state *state)
 {
-	// TODO: move along the screen. probably don't calculate wind speed,
-	// just rely on a delay device. maybe take an initial position and a
-	// step size as additional params
+	// move along the screen, not calculating wind speed, just relying on
+	// any delay devices to set the speed
 	struct oao_vonkarman_stream_data *data = self->device_data;
 	// if we're at the edge, flip direction if needed
 	size_t max_x = data->phase_screen->size1 - data->win_width
