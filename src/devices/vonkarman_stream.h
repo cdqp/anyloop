@@ -9,12 +9,15 @@ struct oao_vonkarman_stream_data {
 	double r0;
 	double L0;
 	double pitch;
-	size_t width;
+	size_t screen_size;
+	size_t win_width;
+	size_t win_height;
 	gsl_rng *rng;
 	gsl_matrix *phase_screen;
-	size_t cur_idx;
-	size_t cur_jdx;
-	int cur_step;
+	size_t cur_x;
+	size_t cur_y;
+	int cur_step_x;
+	int cur_step_y;
 };
 
 // initialize vonkarman_stream device

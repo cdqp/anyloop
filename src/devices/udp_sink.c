@@ -73,8 +73,18 @@ int udp_sink_process(struct oao_device *self, struct oao_state *state)
 	data->iovecs[0].iov_base = &state->header;
 	data->iovecs[0].iov_len = sizeof(state->header);
 	// second thing we send is the block data
-	data->iovecs[1].iov_base = state->block.data;
-	data->iovecs[1].iov_len = state->block.size;
+	data->iovecs[1].iov_base = state->block->data;
+	data->iovecs[1].iov_len = sizeof(double) * state->block->size;
+	// check for size consistency
+	if (state->header.log_dim.y * state->header.log_dim.x
+	!= state->block->size) {
+		log_error("Logical dimensions in header are %lu,%lu, but "
+			"block size is %lu; refusing to sink data",
+			state->header.log_dim.y, state->header.log_dim.x,
+			state->block->size
+		);
+		return 0;
+	}
 	// write all the data in one go
 	size_t n = data->iovecs[0].iov_len + data->iovecs[1].iov_len;
 	ssize_t err = writev(data->sock, data->iovecs, 2);

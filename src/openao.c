@@ -1,5 +1,6 @@
 #include <signal.h>
 #include <string.h>
+#include <gsl/gsl_block.h>
 #include "openao.h"
 #include "logging.h"
 #include "config.h"
@@ -20,6 +21,7 @@ void _cleanup()
 	}
 	conf.n_devices = 0;
 	free(conf.devices); conf.devices = 0;
+	gsl_block_free(state.block);
 }
 
 
@@ -43,6 +45,8 @@ int main(int argc, char *argv[])
 
 	// copy magic number to header
 	strcpy(state.header.magic, "OAO_DATA");
+	// allocate the block
+	state.block = gsl_block_alloc(0);
 
 	// TODO: in addition to config file, parse a log level param
 	// (probably want getopt?)

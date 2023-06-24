@@ -4,9 +4,10 @@ project(
 )
 
 json_dep = dependency('json-c')
-cblas_dep = dependency('gsl')
+gsl_dep= dependency('gsl')
 
 project_source_files = [
+	'src/block.c',
 	'src/config.c',
 	'src/device.c',
 	'src/logging.c',
@@ -22,7 +23,7 @@ incdir = include_directories('src')
 
 executable('openao', project_source_files,
 	install: true,
-	dependencies: [json_dep, cblas_dep],
+	dependencies: [json_dep, gsl_dep],
 	include_directories: incdir
 )
 

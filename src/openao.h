@@ -59,7 +59,7 @@ struct oao_state {
 	// if we want this in vector or matrix form, use the alloc_from_block
 	// methods in gsl:
 	// https://git.savannah.gnu.org/cgit/gsl.git/tree/matrix/init_source.c
-	gsl_block block;
+	gsl_block *block;
 	// a status enum, in case devices need to selectively act differently
 	enum oao_status status;
 	// add more parameters as needed

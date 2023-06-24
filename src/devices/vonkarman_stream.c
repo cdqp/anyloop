@@ -1,4 +1,5 @@
 #include <math.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <time.h>
 #include <gsl/gsl_fft_halfcomplex.h>
@@ -9,6 +10,7 @@
 #include <gsl/gsl_rng.h>
 #include <json-c/json.h>
 #include "openao.h"
+#include "block.h"
 #include "logging.h"
 #include "vonkarman_stream.h"
 
@@ -89,7 +91,10 @@ int _generate_phase_screen(struct oao_device *self)
 	// We assume we're making a square phase screen; this is generally a
 	// good idea (see https://doi.org/10.1364/AO.37.004605), but this could
 	// be changed here if one wishes.
-	data->phase_screen = gsl_matrix_alloc(data->width, data->width);
+	data->phase_screen = gsl_matrix_alloc(
+		data->screen_size,
+		data->screen_size
+	);
 	// We fill a matrix with Gaussian noise to act as the phasors by which
 	// we weight our IFFT. We don't need the phasors to be complex, because
 	// the IFFT later will make them conjugate-symmetric. However, we do
@@ -99,18 +104,18 @@ int _generate_phase_screen(struct oao_device *self)
 	size_t M = data->phase_screen->size1;
 	size_t N = data->phase_screen->size2;
 	log_trace("Allocated %u by %u matrix for phase screen", M, N);
-	for (int idx=0; idx<M; idx++) {
-		for (int jdx=0; jdx<N; jdx++) {
+	for (int x=0; x<M; x++) {
+		for (int y=0; y<N; y++) {
 			// von Kármán spectrum amplitude
 			double amp = _karman_spec(
 				data->L0, data->r0,
-				data->width * data->pitch,
-				data->width * data->pitch,
+				data->screen_size * data->pitch,
+				data->screen_size * data->pitch,
 				// divide by two since we're calculating both
 				// complex and real parts next to each other
-				idx/2, jdx/2
+				x/2, y/2
 			);
-			gsl_matrix_set(data->phase_screen, idx, jdx,
+			gsl_matrix_set(data->phase_screen, x, y,
 				gsl_ran_gaussian(data->rng, 1.0/sqrt(2)) * amp
 			);
 		}
@@ -119,21 +124,21 @@ int _generate_phase_screen(struct oao_device *self)
 	gsl_matrix_set(data->phase_screen, 0, 0, 0.0);
 	log_trace("Generated Fourier components");
 	// perform a 2D backward-fft by doing a bunch of 1D backward ffts
-	for (size_t idx=0; idx<M; idx++) {
+	for (size_t x=0; x<M; x++) {
 		// backward fft each row
 		_backward_fft(
-			data->phase_screen->data + idx*N,
+			data->phase_screen->data + x*N,
 			1, N
 		);
 	}
-	for (size_t jdx=0; jdx<N; jdx++) {
+	for (size_t y=0; y<N; y++) {
 		// backward fft each column
 		_backward_fft(
-			data->phase_screen->data + jdx,
+			data->phase_screen->data + y,
 			data->phase_screen->tda, M
 		);
 	}
-	if (LOG_DEBUG >= log_get_level()) {
+	if (log_get_level() <= LOG_DEBUG) {
 		// DEBUG: write the matrix to a file
 		log_debug("Writing screen to screen.bin");
 		FILE *fp = fopen("screen.bin", "wb");
@@ -153,6 +158,9 @@ int vonkarman_stream_init(struct oao_device *self)
 		1, sizeof(struct oao_vonkarman_stream_data)
 	);
 	struct oao_vonkarman_stream_data *data = self->device_data;
+	// some default params
+	data->win_width = 10;
+	data->win_height = 10;
 	// parse the params json into our data struct
 	json_object_object_foreach(self->params, key, val) {
 		if (key[0] == '_') {
@@ -166,19 +174,75 @@ int vonkarman_stream_init(struct oao_device *self)
 		} else if (!strcmp(key, "pitch")) {
 			data->pitch = strtod(json_object_get_string(val), 0);
 			log_trace("pitch = %E", data->pitch);
-		} else if (!strcmp(key, "width")) {
-			data->width = (size_t) strtoumax(
+		} else if (!strcmp(key, "screen_size")) {
+			data->screen_size= (size_t) strtoumax(
 				json_object_get_string(val), 0, 0
 			);
-			log_trace("width = %u", data->width);
+			log_trace("screen_size = %u", data->screen_size);
+		} else if (!strcmp(key, "start_y")) {
+			data->cur_y= (size_t) strtoumax(
+				json_object_get_string(val), 0, 0
+			);
+			log_trace("start_y = %u", data->cur_y);
+		} else if (!strcmp(key, "win_height")) {
+			data->win_height = (size_t) strtoumax(
+				json_object_get_string(val), 0, 0
+			);
+			log_trace("win_height = %u", data->win_height);
+		} else if (!strcmp(key, "win_width")) {
+			data->win_height = (size_t) strtoumax(
+				json_object_get_string(val), 0, 0
+			);
+			log_trace("win_width = %u", data->win_width);
+		} else if (!strcmp(key, "start_x")) {
+			data->cur_x = (size_t) strtoumax(
+				json_object_get_string(val), 0, 0
+			);
+			log_trace("start_x = %u", data->cur_x);
+		} else if (!strcmp(key, "step_y")) {
+			// no strtoi in stdlib and atoi is insecure
+			data->cur_step_y = (int)strtod(
+				json_object_get_string(val), 0
+			);
+			// that'll do ;)
+			log_trace("step_y = %u", data->cur_step_y);
+		} else if (!strcmp(key, "step_x")) {
+			data->cur_step_x = (int)strtod(
+				json_object_get_string(val), 0
+			);
+			log_trace("step_x = %u", data->cur_step_x);
 		} else {
 			log_warn("Unknown parameter \"%s\"", key);
 		}
 	}
 	// make sure we didn't miss any params
-	if (!data->L0 || !data->r0 || !data->pitch || !data->width) {
-		log_error("You must provide all params: L0, r0, pitch, width.");
+	if (!data->L0 || !data->r0 || !data->pitch || !data->screen_size) {
+		log_error("You must provide the following nonzero params: L0, "
+			"r0, pitch, screen_size."
+		);
 		return -1;
+	}
+	// check for edge conditions
+	if (data->win_width > data->screen_size
+	|| data->win_height > data->screen_size) {
+		log_error("Window width/height greater than screen size; "
+			"falling back to 1,1"
+		);
+		data->win_width = 1; data->win_height = 1;
+	}
+	if (abs(data->cur_step_x) > data->screen_size - data->win_width
+	|| abs(data->cur_step_y) > data->screen_size - data->win_height) {
+		log_error("Step size > size - width or size - height; "
+			"falling back to 0,0"
+		);
+		data->cur_step_x = 0; data->cur_step_y = 0;
+	}
+	if (data->cur_x > data->screen_size - data->win_width
+	|| data->cur_y > data->screen_size - data->win_height) {
+		log_error("Start position > size - width or size - height; "
+			"falling back to 0,0"
+		);
+		data->cur_x = 0; data->cur_y = 0;
 	}
 	// set up the rng
 	data->rng = gsl_rng_alloc(gsl_rng_ranlxs2);
@@ -198,10 +262,32 @@ int vonkarman_stream_process(struct oao_device *self, struct oao_state *state)
 	// just rely on a delay device. maybe take an initial position and a
 	// step size as additional params
 	struct oao_vonkarman_stream_data *data = self->device_data;
+	// if we're at the edge, flip direction if needed
+	size_t max_x = data->phase_screen->size1 - data->win_width
+		- data->cur_step_x;
+	size_t max_y = data->phase_screen->size2 - data->win_height
+		- data->cur_step_y;
+	if ((data->cur_y >= max_y && data->cur_step_y > 0)
+	|| (data->cur_y = 0 && data->cur_step_y < 0)) {
+		data->cur_step_y *= -1;
+	}
+	if ((data->cur_x >= max_x && data->cur_step_x > 0)
+	|| (data->cur_x <= 0 && data->cur_step_x < 0)) {
+		data->cur_step_x *= -1;
+	}
+	data->cur_y += data->cur_step_y;
+	data->cur_x += data->cur_step_x;
+	log_trace("Window at y,x indices %lu,%lu", data->cur_y, data->cur_x);
+	gsl_matrix_view sub_view = gsl_matrix_submatrix(
+		data->phase_screen,
+		data->cur_y, data->cur_x,
+		data->win_height, data->win_width
+	);
+	state->block = mat2blk(&sub_view.matrix);
 	// housekeeping on the info struct
 	state->header.type = OAO_PHASES;
-	state->header.log_dim.y = data->phase_screen->size1;
-	state->header.log_dim.x = data->phase_screen->size2;
+	state->header.log_dim.y = data->win_height;
+	state->header.log_dim.x = data->win_width;
 	state->header.pitch.y = data->pitch;
 	state->header.pitch.x = data->pitch;
 	return 0;
