@@ -1,7 +1,6 @@
 #ifndef _OPENAO_H
 #define _OPENAO_H
 
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -89,8 +88,6 @@ struct oao_conf {
 	// array of oao_device objects
 	struct oao_device *devices;
 };
-
-#include "device.h"
 
 #endif
 

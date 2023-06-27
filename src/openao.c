@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <signal.h>
 #include <string.h>
 #include <gsl/gsl_block.h>

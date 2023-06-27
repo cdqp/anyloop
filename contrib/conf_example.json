@@ -1,18 +1,15 @@
 {
 	"pipeline": [
 		{
+			"uri": "file:./plugin_example.so"
+		},
+		{
 			"uri": "openao:vonkarman_stream",
 			"params": {
-				"r0": "0.02",
 				"L0": "4.0",
+				"r0": "0.02",
 				"pitch": "0.025",
-				"screen_size": "2048",
-				"win_width": "10",
-				"win_height": "10",
-				"start_x": "0",
-				"start_y": "1024",
-				"step_x": "2",
-				"step_y": "0",
+				"screen_size": "2048"
 			}
 		},
 		{
@@ -27,12 +24,6 @@
 			"params": {
 				"ip": "127.0.0.1",
 				"port": "64730"
-			}
-		},
-		{
-			"uri": "openao:file_sink",
-			"params": {
-				"filename": "data.oao"
 			}
 		},
 		{
