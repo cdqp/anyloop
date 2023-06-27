@@ -1,16 +1,16 @@
 #include <dlfcn.h>
 #include <libgen.h>
 #include <string.h>
-#include "openao.h"
+#include "anyloop.h"
 #include "logging.h"
 #include "device.h"
 
 
-int init_device(struct oao_device *dev)
+int init_device(struct aylp_device *dev)
 {
 	int device_found = 0;
 
-	if (!strncmp(dev->uri, "openao", sizeof("openao")-1)) {
+	if (!strncmp(dev->uri, "anyloop", sizeof("anyloop")-1)) {
 		static const size_t imax = sizeof(init_map)/sizeof(init_map[0]);
 		for (size_t idx=0; idx<imax; idx++) {
 			if (!strcmp(init_map[idx].uri, dev->uri)) {
@@ -33,7 +33,10 @@ int init_device(struct oao_device *dev)
 		if (dot) {
 			*dot = 0;	// strip file extension
 		}
-		dev->init = dlsym(plug_handle, strcat(bn, "_init"));
+		// weird cast for compiler warning
+		*(void **) (&dev->init) = dlsym(
+			plug_handle, strcat(bn, "_init")
+		);
 		free(bn); bn = 0;
 	} else {
 		log_error("Device has unsupported URI scheme.");

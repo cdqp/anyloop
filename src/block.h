@@ -1,5 +1,5 @@
-#ifndef _OPENAO_BLOCK_H
-#define _OPENAO_BLOCK_H
+#ifndef _AYLP_BLOCK_H
+#define _AYLP_BLOCK_H
 
 #include <gsl/gsl_matrix.h>
 

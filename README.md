@@ -1,7 +1,8 @@
-OpenAO
-======
+anyloop
+=======
 
-Simple, extensible, open-source adaptive optics software.
+Simple, extensible, plugin-based feedback loop software, with a primary focus on
+supporting adaptive optics applications.
 
 
 TODO

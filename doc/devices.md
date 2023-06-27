@@ -1,20 +1,20 @@
 Devices
 =======
 
-OpenAO uses a plugin-like syntax to add devices to a loop.
+Anyloop uses a plugin-like syntax to add devices to a loop.
 
 Anatomy of a device
 -------------------
 
-See the `oao_device` struct in `openao.h`.
+See the `aylp_device` struct in `anyloop.h`.
 
 Built-in devices
 ----------------
 
 Devices are named with a URI-like syntax. Built-in devices start with the scheme
-`openao`, and are followed only by a "path" (to use URI terminology). For
+`anyloop`, and are followed only by a "path" (to use URI terminology). For
 example, the built-in device to generate von Kármán streams has the path
-`vonkarman_stream`, and thus has the URI `openao:vonkarman_stream`.
+`vonkarman_stream`, and thus has the URI `anyloop:vonkarman_stream`.
 
 To add a new built-in device:
 
@@ -37,7 +37,7 @@ such, a device named `bar.so` is expected to have a function of the following
 name and type signature:
 
 ```c
-int bar_init(struct oao_device *self)
+int bar_init(struct aylp_device *self)
 ```
 
 Note that we strip off anything including and after the first `.` character in
@@ -45,5 +45,5 @@ the basename, so a device with a basename of `blah.a.b.c` should have an init
 function named `blah_init`.
 
 This function can then attach whatever process() and close() functions it wishes
-to its own `oao_device` struct.
+to its own `aylp_device` struct.
 

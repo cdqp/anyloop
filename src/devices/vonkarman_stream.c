@@ -9,7 +9,7 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
 #include <json-c/json.h>
-#include "openao.h"
+#include "anyloop.h"
 #include "block.h"
 #include "logging.h"
 #include "vonkarman_stream.h"
@@ -85,9 +85,9 @@ void _backward_fft(double data[], size_t stride, size_t n)
  * means a certain quantity and fluctuates greatly based on time and
  * environment.
  */
-int _generate_phase_screen(struct oao_device *self)
+int _generate_phase_screen(struct aylp_device *self)
 {
-	struct oao_vonkarman_stream_data *data = self->device_data;
+	struct aylp_vonkarman_stream_data *data = self->device_data;
 	// We assume we're making a square phase screen; this is generally a
 	// good idea (see https://doi.org/10.1364/AO.37.004605), but this could
 	// be changed here if one wishes.
@@ -104,8 +104,8 @@ int _generate_phase_screen(struct oao_device *self)
 	size_t M = data->phase_screen->size1;
 	size_t N = data->phase_screen->size2;
 	log_trace("Allocated %u by %u matrix for phase screen", M, N);
-	for (int x=0; x<M; x++) {
-		for (int y=0; y<N; y++) {
+	for (size_t x=0; x<M; x++) {
+		for (size_t y=0; y<N; y++) {
 			// von Kármán spectrum amplitude
 			double amp = _karman_spec(
 				data->L0, data->r0,
@@ -150,14 +150,14 @@ int _generate_phase_screen(struct oao_device *self)
 }
 
 
-int vonkarman_stream_init(struct oao_device *self)
+int vonkarman_stream_init(struct aylp_device *self)
 {
 	self->process = &vonkarman_stream_process;
 	self->close = &vonkarman_stream_close;
-	self->device_data = (struct oao_vonkarman_stream_data *)calloc(
-		1, sizeof(struct oao_vonkarman_stream_data)
+	self->device_data = (struct aylp_vonkarman_stream_data *)calloc(
+		1, sizeof(struct aylp_vonkarman_stream_data)
 	);
-	struct oao_vonkarman_stream_data *data = self->device_data;
+	struct aylp_vonkarman_stream_data *data = self->device_data;
 	// some default params
 	data->win_width = 10;
 	data->win_height = 10;
@@ -256,18 +256,18 @@ int vonkarman_stream_init(struct oao_device *self)
 }
 
 
-int vonkarman_stream_process(struct oao_device *self, struct oao_state *state)
+int vonkarman_stream_process(struct aylp_device *self, struct aylp_state *state)
 {
 	// move along the screen, not calculating wind speed, just relying on
 	// any delay devices to set the speed
-	struct oao_vonkarman_stream_data *data = self->device_data;
+	struct aylp_vonkarman_stream_data *data = self->device_data;
 	// if we're at the edge, flip direction if needed
 	size_t max_x = data->phase_screen->size1 - data->win_width
 		- data->cur_step_x;
 	size_t max_y = data->phase_screen->size2 - data->win_height
 		- data->cur_step_y;
 	if ((data->cur_y >= max_y && data->cur_step_y > 0)
-	|| (data->cur_y = 0 && data->cur_step_y < 0)) {
+	|| (data->cur_y <= 0 && data->cur_step_y < 0)) {
 		data->cur_step_y *= -1;
 	}
 	if ((data->cur_x >= max_x && data->cur_step_x > 0)
@@ -284,7 +284,7 @@ int vonkarman_stream_process(struct oao_device *self, struct oao_state *state)
 	);
 	state->block = mat2blk(&sub_view.matrix);
 	// housekeeping on the info struct
-	state->header.type = OAO_PHASES;
+	state->header.type = AYLP_PHASES;
 	state->header.log_dim.y = data->win_height;
 	state->header.log_dim.x = data->win_width;
 	state->header.pitch.y = data->pitch;
@@ -293,13 +293,13 @@ int vonkarman_stream_process(struct oao_device *self, struct oao_state *state)
 }
 
 
-int vonkarman_stream_close(struct oao_device *self)
+int vonkarman_stream_close(struct aylp_device *self)
 {
 	json_object_object_foreach(self->params, key, _) {
 		json_object_object_del(self->params, key);
 	}
 	free(self->params); self->params = 0;
-	struct oao_vonkarman_stream_data *data = self->device_data;
+	struct aylp_vonkarman_stream_data *data = self->device_data;
 	gsl_matrix_free(data->phase_screen); data->phase_screen = 0;
 	free(data); self->device_data = 0;
 	return 0;

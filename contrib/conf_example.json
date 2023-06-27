@@ -4,33 +4,35 @@
 			"uri": "file:./plugin_example.so"
 		},
 		{
-			"uri": "openao:vonkarman_stream",
+			"uri": "anyloop:vonkarman_stream",
 			"params": {
 				"L0": "4.0",
 				"r0": "0.02",
 				"pitch": "0.025",
-				"screen_size": "2048"
+				"screen_size": "2048",
+				"step_x": "1",
+				"step_y": "1"
 			}
 		},
 		{
-			"uri": "openao:delay",
+			"uri": "anyloop:delay",
 			"params": {
 				"s": "0",
-				"ns": "200000000"
+				"ns": "100000000"
 			}
 		},
 		{
-			"uri": "openao:udp_sink",
+			"uri": "anyloop:udp_sink",
 			"params": {
 				"ip": "127.0.0.1",
 				"port": "64730"
 			}
 		},
 		{
-			"uri": "openao:delay",
+			"uri": "anyloop:delay",
 			"params": {
 				"s": "0",
-				"ns": "800000000",
+				"ns": "400000000",
 				"_comment": "hi"
 			},
 			"_comment": {

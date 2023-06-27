@@ -4,43 +4,43 @@ using ArgParse
 using Plots; gr()
 using Sockets
 
-struct OAO_Header
+struct AYLP_Header
     magic::Vector{Char}
-    oao_blocktype::UInt64
+    aylp_blocktype::UInt64
     log_dim_y::UInt64
     log_dim_x::UInt64
     pitch_y::Float64
     pitch_x::Float64
 end
 
-struct OAO_Data
-    head::OAO_Header
+struct AYLP_Data
+    head::AYLP_Header
     data::Vector{Float64}
 end
 
-function Base.read(io::IO, ::Type{OAO_Header})
+function Base.read(io::IO, ::Type{AYLP_Header})
     magic = Vector{Char}(undef, 8)
     for i in 1:8
         magic[i] = read(io, Char)
     end
-    oao_blocktype = read(io, UInt64)
+    aylp_blocktype = read(io, UInt64)
     log_dim_y = read(io, UInt64)
     log_dim_x = read(io, UInt64)
     pitch_y = read(io, Float64)
     pitch_x = read(io, Float64)
-    return OAO_Header(
-        magic, oao_blocktype, log_dim_y, log_dim_x, pitch_y, pitch_x
+    return AYLP_Header(
+        magic, aylp_blocktype, log_dim_y, log_dim_x, pitch_y, pitch_x
     )
 end
 
-function Base.read(io::IO, ::Type{OAO_Data})
-    head = read(io, OAO_Header)
+function Base.read(io::IO, ::Type{AYLP_Data})
+    head = read(io, AYLP_Header)
     size = head.log_dim_y * head.log_dim_x
     data = Vector{Float64}(undef, size)
     for i in 1:size
         data[i] = read(io, Float64)
     end
-    return OAO_Data(head, data)
+    return AYLP_Data(head, data)
 end
 
 argset = ArgParseSettings()
@@ -58,7 +58,7 @@ end
 
 for i in 1:50
     recvbytes = IOBuffer(recv(sock))
-    data = read(recvbytes, OAO_Data)
+    data = read(recvbytes, AYLP_Data)
     show(data)
     p = heatmap(reshape(data.data, (data.head.log_dim_y, data.head.log_dim_x)))
     display(p)

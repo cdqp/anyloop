@@ -1,7 +1,7 @@
 project(
-	'openao',
+	'anyloop',
 	'c',
-	default_options: ['warning_level=everything', 'optimization=3']
+	default_options: ['warning_level=3', 'optimization=3']
 )
 
 json_dep = dependency('json-c')
@@ -13,7 +13,7 @@ project_source_files = [
 	'src/config.c',
 	'src/device.c',
 	'src/logging.c',
-	'src/openao.c',
+	'src/anyloop.c',
 	'src/devices/delay.c',
 	'src/devices/file_sink.c',
 	'src/devices/logger.c',
@@ -23,7 +23,7 @@ project_source_files = [
 
 incdir = include_directories('src')
 
-executable('openao', project_source_files,
+executable('anyloop', project_source_files,
 	install: true,
 	dependencies: deps,
 	include_directories: incdir

@@ -1,12 +1,12 @@
-#ifndef _OPENAO_UDP_SINK_H
-#define _OPENAO_UDP_SINK_H
+#ifndef _AYLP_UDP_SINK_H
+#define _AYLP_UDP_SINK_H
 
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
-#include "openao.h"
+#include "anyloop.h"
 
-struct oao_udp_sink_data {
+struct aylp_udp_sink_data {
 	int sock;
 	// destination
 	struct sockaddr_in dest_sa;
@@ -15,13 +15,13 @@ struct oao_udp_sink_data {
 };
 
 // initialize udp_sink device
-int udp_sink_init(struct oao_device *self);
+int udp_sink_init(struct aylp_device *self);
 
 // process udp_sink device once per loop
-int udp_sink_process(struct oao_device *self, struct oao_state *state);
+int udp_sink_process(struct aylp_device *self, struct aylp_state *state);
 
 // close udp_sink device when loop exits
-int udp_sink_close(struct oao_device *self);
+int udp_sink_close(struct aylp_device *self);
 
 #endif
 

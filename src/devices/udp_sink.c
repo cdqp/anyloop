@@ -6,19 +6,19 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
-#include "openao.h"
+#include "anyloop.h"
 #include "logging.h"
 #include "udp_sink.h"
 
 
-int udp_sink_init(struct oao_device *self)
+int udp_sink_init(struct aylp_device *self)
 {
 	self->process = &udp_sink_process;
 	self->close = &udp_sink_close;
-	self->device_data = (struct oao_udp_sink_data *)calloc(
-		1, sizeof(struct oao_udp_sink_data)
+	self->device_data = (struct aylp_udp_sink_data *)calloc(
+		1, sizeof(struct aylp_udp_sink_data)
 	);
-	struct oao_udp_sink_data *data = self->device_data;
+	struct aylp_udp_sink_data *data = self->device_data;
 	data->sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (data->sock == -1) {
 		log_error("Couldn't initialize socket: error %d", errno);
@@ -66,10 +66,10 @@ int udp_sink_init(struct oao_device *self)
 }
 
 
-int udp_sink_process(struct oao_device *self, struct oao_state *state)
+int udp_sink_process(struct aylp_device *self, struct aylp_state *state)
 {
-	struct oao_udp_sink_data *data = self->device_data;
-	// first thing we send is the oao header
+	struct aylp_udp_sink_data *data = self->device_data;
+	// first thing we send is the aylp header
 	data->iovecs[0].iov_base = &state->header;
 	data->iovecs[0].iov_len = sizeof(state->header);
 	// second thing we send is the block data
@@ -88,7 +88,11 @@ int udp_sink_process(struct oao_device *self, struct oao_state *state)
 	// write all the data in one go
 	size_t n = data->iovecs[0].iov_len + data->iovecs[1].iov_len;
 	ssize_t err = writev(data->sock, data->iovecs, 2);
-	if (err != n) {
+	if (err < 0) {
+		// if n > SSIZE_MAX, this will fire, so we don't need to check
+		// the sign of (ssize_t)n ourselves
+		log_error("Couldn't send data: %s", strerror(errno));
+	} else if (err != (ssize_t)n) {
 		if (err == -1) {
 			log_error("Couldn't send data: %s", strerror(errno));
 		} else {
@@ -99,7 +103,7 @@ int udp_sink_process(struct oao_device *self, struct oao_state *state)
 }
 
 
-int udp_sink_close(struct oao_device *self)
+int udp_sink_close(struct aylp_device *self)
 {
 	free(self->params); self->params = 0;
 	return 0;

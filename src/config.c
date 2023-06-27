@@ -1,12 +1,12 @@
 #include <json-c/json.h>
-#include "openao.h"
+#include "anyloop.h"
 #include "logging.h"
 #include "config.h"
 
 
-struct oao_conf read_config(const char *file)
+struct aylp_conf read_config(const char *file)
 {
-	struct oao_conf ret;
+	struct aylp_conf ret;
 
 	log_info("Opening config file \"%s\"", file);
 	struct json_object *jobj = json_object_from_file(file);
@@ -22,8 +22,8 @@ struct oao_conf read_config(const char *file)
 		} else if (!strcmp(tlkey, "pipeline")) {
 			// parse devices in pipeline
 			ret.n_devices = json_object_array_length(sub1);
-			ret.devices = (struct oao_device *)calloc(
-				ret.n_devices, sizeof(struct oao_device)
+			ret.devices = (struct aylp_device *)calloc(
+				ret.n_devices, sizeof(struct aylp_device)
 			);
 			log_info("Seeing %d devices", ret.n_devices);
 			for (size_t idx=0; idx<ret.n_devices; idx++) {

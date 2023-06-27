@@ -1,9 +1,9 @@
-#include "openao.h"
+#include "anyloop.h"
 #include "logging.h"
 #include "logger.h"
 
 
-int logger_init(struct oao_device *self)
+int logger_init(struct aylp_device *self)
 {
 	self->process = &logger_process;
 	self->close = &logger_close;
@@ -12,15 +12,18 @@ int logger_init(struct oao_device *self)
 }
 
 
-int logger_process(struct oao_device *self, struct oao_state *state)
+int logger_process(struct aylp_device *self, struct aylp_state *state)
 {
+	UNUSED(self);
+	UNUSED(state);
 	log_info("logger processed");
 	return 0;
 }
 
 
-int logger_close(struct oao_device *self)
+int logger_close(struct aylp_device *self)
 {
+	UNUSED(self);
 	log_info("logger closed");
 	return 0;
 }

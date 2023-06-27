@@ -1,11 +1,11 @@
 #include <time.h>
 #include <json-c/json.h>
-#include "openao.h"
+#include "anyloop.h"
 #include "logging.h"
 #include "delay.h"
 
 
-int delay_init(struct oao_device *self)
+int delay_init(struct aylp_device *self)
 {
 	self->process = &delay_process;
 	self->close = &delay_close;
@@ -34,14 +34,15 @@ int delay_init(struct oao_device *self)
 }
 
 
-int delay_process(struct oao_device *self, struct oao_state *state)
+int delay_process(struct aylp_device *self, struct aylp_state *state)
 {
+	UNUSED(state);
 	nanosleep((struct timespec *)self->device_data, 0);
 	return 0;
 }
 
 
-int delay_close(struct oao_device *self)
+int delay_close(struct aylp_device *self)
 {
 	free(self->device_data); self->device_data = 0;
 	return 0;
