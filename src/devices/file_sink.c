@@ -27,7 +27,7 @@ int file_sink_init(struct aylp_device *self)
 	}
 	if (!data->filename) {
 		log_error("You must provide the filename parameter.");
-		return 1;
+		return -1;
 	}
 	return 0;
 }

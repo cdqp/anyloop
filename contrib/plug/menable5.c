@@ -1,0 +1,172 @@
+#include <sys/ioctl.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <sched.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "anyloop.h"
+#include "logging.h"
+#include "menable5.h"
+
+// TODO: use json params for w and h
+#define WIDTH 80
+#define HEIGHT 80
+#define SAMP_PER_PIX 1
+#define BYTE_PER_SAMP 1
+// do we want to consider 10-bit packed? kinda doubt it'd be worth it.
+
+
+int menable5_init(struct aylp_device *self)
+{
+	int err;
+	self->device_data = (struct aylp_menable5_data *)calloc(
+		1, sizeof(struct aylp_menable5_data)
+	);
+	struct aylp_menable5_data *data = self->device_data;
+	// attach methods
+	self->process = &menable5_process;
+	self->close = &menable5_close;
+
+	// filling in some parameters:
+	// we only need one subbuf with whatever max size
+	data->creation.maxsize = UINT64_MAX;
+	data->creation.subbufs = 1;
+	// and we need to make enough room for that subbuf
+	data->memory.length = WIDTH * HEIGHT * SAMP_PER_PIX * BYTE_PER_SAMP;
+	// TODO: json ^^
+	data->memory.subnr = 0;
+	// .start and .headnr uninitialized
+	// we'll want to capture in blocking mode, indefinitely
+	data->control.mode = DMA_BLOCKINGMODE;
+	data->control.timeout = 1000;
+	data->control.transfer_todo = GRAB_INFINITE;
+	data->control.chan = 0;
+	data->control.start_buf = 0;
+	data->control.dma_dir = MEN_DMA_DIR_DEVICE_TO_CPU;
+	// .head uninitialized
+
+	// open the /dev file
+	char fgpath[] = "/dev/menable0";	// TODO: json?
+	data->fg = open(fgpath, O_RDWR);
+	if (data->fg == -1) {
+		log_error("Couldn't open %s: %s\n", fgpath, strerror(errno));
+		return -1;
+	}
+
+	// allocate memory on the kernel side
+	data->memory.headnr = ioctl(
+		data->fg,
+		MEN_IOC(ALLOCATE_VIRT_BUFFER, data->creation),
+		&data->creation
+	);
+	if ((int)data->memory.headnr < 0) {
+		log_error("allocate_virt_buffer failed: %s\n",
+			strerror(errno)
+		);
+		return -1;
+	}
+	log_debug("Got head number %d\n", data->memory.headnr);
+
+	// allocate our own buffer
+	data->memory.start = (unsigned long)malloc(data->memory.length);
+	if (!data->memory.start) {
+		log_error("malloc failed: %s\n", strerror(errno));
+		return -1;
+	}
+	// copy the pointer to data->fb for ease of access
+	data->fb = (char const *)data->memory.start;
+	// data->memory is now fully initialized
+
+	// tell the driver about our buffer
+	err = ioctl(
+		data->fg,
+		MEN_IOC(ADD_VIRT_USER_BUFFER, data->memory),
+		&data->memory
+	);
+	if (err) {
+		log_error("add_virt_user_buffer failed: %s\n", strerror(errno));
+		return -1;
+	}
+
+	// start the capture by sending the control parameters
+	data->control.head = data->memory.headnr;
+	err = ioctl(
+		data->fg,
+		MEN_IOC(FG_START_TRANSFER, data->control),
+		&data->control
+	);
+	if (err) {
+		log_error("fg_start_transfer failed: %s\n", strerror(errno));
+		return -1;
+	}
+
+	return 0;
+}
+
+
+int menable5_process(struct aylp_device *self, struct aylp_state *state)
+{
+	int err;
+	struct aylp_menable5_data *data = self->device_data;
+	struct men_io_bufidx bufidx = {
+		.headnr = data->memory.headnr,
+		.index = data->memory.subnr,
+	};
+	err = ioctl(data->fg, MEN_IOC(UNLOCK_BUFFER_NR,bufidx), &bufidx);
+	if (UNLIKELY(err)) {
+		log_error("Unlock failed: %s\n", strerror(errno));
+		return err;
+	}
+	// only try 1k times to get a frame
+	size_t i;
+	for (i=0; i<1000; i++) {
+		struct handshake_frame hand = {
+			.head = data->memory.headnr,
+			.mode = SEL_ACT_IMAGE
+		};
+		err = ioctl(data->fg,
+			MEN_IOC(GET_HANDSHAKE_DMA_BUFFER,hand), &hand
+		);
+		if (UNLIKELY(err)) {
+			log_error("Handshake failed: %s\n", strerror(errno));
+			return err;
+		}
+		if (hand.frame == -12) {
+			// frame not ready
+			sched_yield();
+		} else {
+			break;
+		}
+	}
+	if (UNLIKELY(i==1000)) {
+		log_error("Hit max tries for frame read");
+		return -1;
+	}
+	err = ioctl(data->fg, MEN_IOC(DMA_LENGTH,bufidx), &bufidx);
+	if (UNLIKELY(err)) {
+		log_error("Get length failed: %s\n", strerror(errno));
+		return err;
+	}
+	// yes, I know, unions are a thing, but I'm using the driver's struct
+	// verbatim, and this is fun and cursed ;)
+	// (men_io_bufidx is technically a union of the struct and a size_t)
+	size_t imglen = *(size_t *)(void *)&bufidx;
+	log_trace("Got image of length: %lu\n", imglen);
+	// TODO: multithreaded centroiding
+	UNUSED(state);
+	return 0;
+}
+
+
+int menable5_close(struct aylp_device *self)
+{
+	struct aylp_menable5_data *data = self->device_data;
+	ioctl(data->fg, MEN_IOC(FG_STOP_CMD,0), data->control.chan);
+	ioctl(data->fg, MEN_IOC(FREE_VIRT_BUFFER,0), data->memory.headnr);
+	free(data); self->device_data = 0;
+	return 0;
+}
+

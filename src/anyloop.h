@@ -7,7 +7,9 @@
 #include <gsl/gsl_matrix.h>
 #include <json-c/json.h>
 
-#define UNUSED(x) (void)(x)
+#define UNUSED(x)	(void)(x)
+#define LIKELY(x)	__builtin_expect((x),1)
+#define UNLIKELY(x)	__builtin_expect((x),0)
 
 // flags that can be set to tell devices different things
 enum aylp_status {

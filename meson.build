@@ -30,9 +30,19 @@ executable('anyloop', project_source_files,
 )
 
 shared_library('plugin_example',
-	['contrib/plugin_example.c', 'src/logging.c'],
+	['contrib/plug/plugin_example.c', 'src/logging.c'],
 	name_prefix: '',
 	install: true,
+	dependencies: deps,
+	install_dir: 'plugins',
+	include_directories: incdir
+)
+
+shared_library('menable5',
+	['contrib/plug/menable5.c', 'src/logging.c'],
+	name_prefix: '',
+	install: true,
+	dependencies: deps,
 	install_dir: 'plugins',
 	include_directories: incdir
 )
