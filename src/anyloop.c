@@ -1,6 +1,5 @@
 #include <errno.h>
 #include <signal.h>
-#include <string.h>
 #include <gsl/gsl_block.h>
 #include "anyloop.h"
 #include "logging.h"
@@ -11,7 +10,7 @@ struct aylp_state state = {0};
 struct aylp_conf conf;
 
 
-void _cleanup()
+void _cleanup(void)
 {
 	for (size_t idx=0; idx<conf.n_devices; idx++) {
 		struct aylp_device *dev = &conf.devices[idx];
@@ -45,7 +44,7 @@ int main(int argc, char *argv[])
 	}
 
 	// copy magic number to header
-	strcpy(state.header.magic, "AYLP_DATA");
+	state.header.magic = AYLPDATA_MAGIC;
 	// allocate the block
 	state.block = gsl_block_alloc(0);
 

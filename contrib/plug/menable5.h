@@ -94,6 +94,10 @@ struct men_io_bufidx {
 };
 
 struct aylp_menable5_data {
+	// params from json
+	size_t width;
+	size_t height;
+	size_t bytes_per_px;
 	// parameters for initialization
 	struct mm_create_s creation;
 	struct men_io_range memory;

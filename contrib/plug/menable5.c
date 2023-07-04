@@ -11,11 +11,6 @@
 #include "logging.h"
 #include "menable5.h"
 
-// TODO: use json params for w and h
-#define WIDTH 80
-#define HEIGHT 80
-#define SAMP_PER_PIX 1
-#define BYTE_PER_SAMP 1
 // do we want to consider 10-bit packed? kinda doubt it'd be worth it.
 
 
@@ -30,13 +25,43 @@ int menable5_init(struct aylp_device *self)
 	self->process = &menable5_process;
 	self->close = &menable5_close;
 
+	// parse the params json into our data struct
+	json_object_object_foreach(self->params, key, val) {
+		if (key[0] == '_') {
+			// keys starting with _ are comments
+		} else if (!strcmp(key, "width")) {
+			data->width = (size_t)strtoumax(
+				json_object_get_string(val), 0, 0
+			);
+			log_trace("width = %E", data->width);
+		} else if (!strcmp(key, "height")) {
+			data->height = (size_t)strtoumax(
+				json_object_get_string(val), 0, 0
+			);
+			log_trace("height = %E", data->height);
+		} else if (!strcmp(key, "bytes_per_px")) {
+			data->bytes_per_px = (size_t)strtoumax(
+				json_object_get_string(val), 0, 0
+			);
+			log_trace("bytes_per_px = %E", data->bytes_per_px);
+		} else {
+			log_warn("Unknown parameter \"%s\"", key);
+		}
+	}
+	// make sure we didn't miss any params
+	if (!data->width || !data->height || !data->bytes_per_px) {
+		log_error("You must provide the following nonzero params: "
+			"width, height, bytes_per_px"
+		);
+		return -1;
+	}
+
 	// filling in some parameters:
 	// we only need one subbuf with whatever max size
 	data->creation.maxsize = UINT64_MAX;
 	data->creation.subbufs = 1;
 	// and we need to make enough room for that subbuf
-	data->memory.length = WIDTH * HEIGHT * SAMP_PER_PIX * BYTE_PER_SAMP;
-	// TODO: json ^^
+	data->memory.length = data->width * data->height * data->bytes_per_px;
 	data->memory.subnr = 0;
 	// .start and .headnr uninitialized
 	// we'll want to capture in blocking mode, indefinitely
@@ -57,7 +82,7 @@ int menable5_init(struct aylp_device *self)
 	}
 
 	// allocate memory on the kernel side
-	data->memory.headnr = ioctl(
+	data->memory.headnr = (unsigned int)ioctl(
 		data->fg,
 		MEN_IOC(ALLOCATE_VIRT_BUFFER, data->creation),
 		&data->creation

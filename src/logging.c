@@ -51,7 +51,7 @@ void log_set_level(int level)
 }
 
 
-int log_get_level()
+int log_get_level(void)
 {
 	return log_status.level;
 }

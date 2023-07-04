@@ -1,5 +1,5 @@
 #!/usr/bin/julia
-# just a rudimentary plotting script to watch square matrices from udp
+# just a rudimentary plotting script to watch AYLPDATA files from udp
 using ArgParse
 using Plots; gr()
 using Sockets
@@ -23,6 +23,7 @@ function Base.read(io::IO, ::Type{AYLP_Header})
     for i in 1:8
         magic[i] = read(io, Char)
     end
+    @assert String(magic) == "AYLPDATA";
     aylp_blocktype = read(io, UInt64)
     log_dim_y = read(io, UInt64)
     log_dim_x = read(io, UInt64)
@@ -55,6 +56,8 @@ sock = UDPSocket()
 if !bind(sock, ip"0.0.0.0", parse(Int, args["port"]))
     throw(SystemError("couldn't open port"))
 end
+
+println("listening on $(args["port"]) ...")
 
 for i in 1:50
     recvbytes = IOBuffer(recv(sock))

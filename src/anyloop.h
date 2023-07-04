@@ -1,6 +1,7 @@
 #ifndef _AYLP_ANYLOOP_H
 #define _AYLP_ANYLOOP_H
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,35 +12,42 @@
 #define LIKELY(x)	__builtin_expect((x),1)
 #define UNLIKELY(x)	__builtin_expect((x),0)
 
-// flags that can be set to tell devices different things
-enum aylp_status {
-	AYLP_DONE = 1 << 0,	// done with loop
-	// add more as necessary
-};
+// require IEC559 floats
+#ifndef __STDC_IEC_559__
+_Static_assert(0, "we require IEC559 floats");
+#endif
 
-// type of data written to block
+_Static_assert(sizeof(size_t) == 8, "we need size_t to be 64-bit for gsl");
+
+// little-endian representation of "AYLPDATA" as a magic number
+#define AYLPDATA_MAGIC 0x41544144504C5941
+
+// flags for type of data written to block
 // this is useful for a few reasons; for example, a DM might want to be able to
 // take a command directly (after having gone through whatever processing device
 // upstream), while also being able to just take raw phases (e.g. from a von
 // Kármán stream) and scale them according to the stroke depth
-enum aylp_blocktype {
-	AYLP_PHASES = 1 << 0,	// a screen of phases in radians
-	AYLP_COMMAND = 1 << 1,	// a command to send to a device (range ±1)
-	// add more as necessary
-};
+#define AYLP_PHASES	1 << 0	// a screen of phases in radians
+#define AYLP_COMMAND	1 << 1	// a command to send to a device (range ±1)
+// add more as necessary
+
+// flags that can be set to tell devices different things
+#define AYLP_DONE	1 << 0		// done with loop
+// add more as necessary
 
 // saved data files will use this as a header (see file_sink_process())
 // and it's also good to have the rest of this info for devices
 struct aylp_header {
-	char magic[8];	// = "AYLP_DATA"
+	// magic number to verify from the other end
+	uint64_t magic;
 	// type of data written to block
-	enum aylp_blocktype type;
+	uint64_t type;
 	// logical dimensions (e.g. of a matrix)
 	// for example, commands to a DM might usually be seen as vectors, but
 	// in reality have some logical x,y dimensions, which can be important
 	struct {
-		size_t y;
-		size_t x;
+		uint64_t y;
+		uint64_t x;
 	} log_dim;
 	// physical distance between successive logical rows and columns
 	struct {
@@ -47,7 +55,6 @@ struct aylp_header {
 		double x;
 	} pitch;
 };
-
 
 // state of the system (written to or read from by devices)
 struct aylp_state {
@@ -63,8 +70,8 @@ struct aylp_state {
 	// methods in gsl:
 	// https://git.savannah.gnu.org/cgit/gsl.git/tree/matrix/init_source.c
 	gsl_block *block;
-	// a status enum, in case devices need to selectively act differently
-	enum aylp_status status;
+	// status flags, in case devices need to selectively act differently
+	uint64_t status;
 	// add more parameters as needed
 };
 

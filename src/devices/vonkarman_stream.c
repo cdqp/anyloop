@@ -33,8 +33,8 @@ double _karman_spec(double L0, double r0, double Gx, double Gy,
 	return (
 		0.15132
 		/ sqrt(Gx*Gy)
-		/ powf(r0, 5.0/6.0)
-		/ powf(gsl_hypot3(x/Gx, y/Gy, 1/L0), 11.0/6.0)
+		/ pow(r0, 5.0/6.0)
+		/ pow(gsl_hypot3(x/Gx, y/Gy, 1/L0), 11.0/6.0)
 	);
 }
 

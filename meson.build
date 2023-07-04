@@ -2,6 +2,8 @@ project(
 	'anyloop',
 	'c',
 	default_options: ['warning_level=3', 'optimization=3']
+	#default_options: ['warning_level=everything', 'optimization=3']
+	# this is worth occasionally turning on to check
 )
 
 json_dep = dependency('json-c')
