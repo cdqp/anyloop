@@ -29,13 +29,15 @@ int file_sink_init(struct aylp_device *self)
 		log_error("You must provide the filename parameter.");
 		return -1;
 	}
+	// set type
+	self->type_in = AYLP_T_BLOCK | AYLP_U_ANY;
+	self->type_out = 0;
 	return 0;
 }
 
 
 int file_sink_process(struct aylp_device *self, struct aylp_state *state)
 {
-	// TODO: error checking
 	struct aylp_file_sink_data *data = self->device_data;
 	// check for size consistency
 	if (state->header.log_dim.y * state->header.log_dim.x
@@ -47,6 +49,7 @@ int file_sink_process(struct aylp_device *self, struct aylp_state *state)
 		);
 		return 0;
 	}
+	// TODO: error checking
 	FILE *fp = fopen(data->filename, "wb");
 	// write the file header
 	fwrite(&state->header, sizeof(struct aylp_header), 1, fp);

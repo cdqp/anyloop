@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 	}
 
 	// copy magic number to header
-	state.header.magic = AYLPDATA_MAGIC;
+	state.header.magic = AYLP_MAGIC;
 	// allocate the block
 	state.block = gsl_block_alloc(0);
 
@@ -78,7 +78,24 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	while (state.status ^ AYLP_DONE) {
+	// typecheck the device pipeline
+	enum aylp_type type_cur;
+	// first device must be compatible with T_NONE and output of last device
+	type_cur = AYLP_T_NONE | conf.devices[conf.n_devices-1].type_out;
+	for (size_t idx=0; idx<conf.n_devices; idx++) {
+		if (!(conf.devices[idx].type_in & type_cur)) {
+			log_fatal("Device %s with input type %X "
+				"is incompatible with previous device of "
+				"output type %X", conf.devices[idx].uri,
+				conf.devices[idx].type_in, type_cur
+			);
+			return 1;
+		}
+		if (conf.devices[idx].type_out)
+			type_cur = conf.devices[idx].type_out;
+	}
+
+	while (state.header.status ^ AYLP_DONE) {
 		for (size_t idx=0; idx<conf.n_devices; idx++) {
 			struct aylp_device *dev = &conf.devices[idx];
 			if (dev->process) {

@@ -8,6 +8,9 @@ int logger_init(struct aylp_device *self)
 	self->process = &logger_process;
 	self->close = &logger_close;
 	log_info("logger initialized");
+	// set types
+	self->type_in = AYLP_T_ANY | AYLP_U_ANY;
+	self->type_out = 0;
 	return 0;
 }
 

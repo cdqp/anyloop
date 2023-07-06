@@ -252,6 +252,9 @@ int vonkarman_stream_init(struct aylp_device *self)
 		log_error("Failed to generate phase screen.");
 		return -1;
 	}
+	// set types
+	self->type_in = AYLP_T_ANY | AYLP_U_ANY;
+	self->type_out = AYLP_T_BLOCK | AYLP_U_RAD;	// TODO: matrix?
 	return 0;
 }
 
@@ -282,9 +285,13 @@ int vonkarman_stream_process(struct aylp_device *self, struct aylp_state *state)
 		data->cur_y, data->cur_x,
 		data->win_height, data->win_width
 	);
+	// it's possible that there's a faster way of doing this than the memcpy
+	// that mat2blk requires---we'd need to somehow present a block view of
+	// the submatrix, and make sure that downstream devices are compatible
+	// with this kind of view. TODO: look into this.
 	state->block = mat2blk(&sub_view.matrix);
 	// housekeeping on the info struct
-	state->header.type = AYLP_PHASES;
+	state->header.type = AYLP_T_BLOCK | AYLP_U_RAD;
 	state->header.log_dim.y = data->win_height;
 	state->header.log_dim.x = data->win_width;
 	state->header.pitch.y = data->pitch;

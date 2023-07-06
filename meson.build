@@ -6,6 +6,8 @@ project(
 	# this is worth occasionally turning on to check
 )
 
+add_global_arguments(['-std=gnu2x'], language : 'c')
+
 json_dep = dependency('json-c')
 gsl_dep = dependency('gsl')
 deps = [json_dep, gsl_dep]

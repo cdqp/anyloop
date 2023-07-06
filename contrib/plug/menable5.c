@@ -128,6 +128,10 @@ int menable5_init(struct aylp_device *self)
 		return -1;
 	}
 
+	// set types
+	self->type_in = AYLP_T_ANY | AYLP_U_ANY;
+	self->type_out = AYLP_T_VECTOR | AYLP_U_MINMAX;
+
 	return 0;
 }
 

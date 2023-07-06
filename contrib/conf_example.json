@@ -29,6 +29,12 @@
 			}
 		},
 		{
+			"uri": "anyloop:file_sink",
+			"params": {
+				"filename": "data.aylp"
+			}
+		},
+		{
 			"uri": "anyloop:delay",
 			"params": {
 				"s": "0",

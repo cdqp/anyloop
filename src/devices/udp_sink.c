@@ -62,6 +62,9 @@ int udp_sink_init(struct aylp_device *self)
 	if (err) {
 		log_error("Couldn't connect: %s", strerror(errno));
 	}
+	// set types
+	self->type_in = AYLP_T_BLOCK | AYLP_U_ANY;
+	self->type_out = 0;
 	return 0;
 }
 

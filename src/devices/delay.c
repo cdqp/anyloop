@@ -30,6 +30,9 @@ int delay_init(struct aylp_device *self)
 			log_warn("Unknown parameter \"%s\"", key);
 		}
 	}
+	// set types
+	self->type_in = AYLP_T_ANY | AYLP_U_ANY;
+	self->type_out = 0;
 	return 0;
 }
 
