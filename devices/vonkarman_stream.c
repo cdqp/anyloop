@@ -158,10 +158,16 @@ int vonkarman_stream_init(struct aylp_device *self)
 		1, sizeof(struct aylp_vonkarman_stream_data)
 	);
 	struct aylp_vonkarman_stream_data *data = self->device_data;
+
 	// some default params
 	data->win_width = 10;
 	data->win_height = 10;
+
 	// parse the params json into our data struct
+	if (!self->params) {
+		log_error("No params object found.");
+		return -1;
+	}
 	json_object_object_foreach(self->params, key, val) {
 		if (key[0] == '_') {
 			// keys starting with _ are comments
@@ -215,6 +221,7 @@ int vonkarman_stream_init(struct aylp_device *self)
 			log_warn("Unknown parameter \"%s\"", key);
 		}
 	}
+
 	// make sure we didn't miss any params
 	if (!data->L0 || !data->r0 || !data->pitch || !data->screen_size) {
 		log_error("You must provide the following nonzero params: L0, "
@@ -222,6 +229,7 @@ int vonkarman_stream_init(struct aylp_device *self)
 		);
 		return -1;
 	}
+
 	// check for edge conditions
 	if (data->win_width > data->screen_size
 	|| data->win_height > data->screen_size) {
@@ -244,17 +252,21 @@ int vonkarman_stream_init(struct aylp_device *self)
 		);
 		data->cur_x = 0; data->cur_y = 0;
 	}
+
 	// set up the rng
 	data->rng = gsl_rng_alloc(gsl_rng_ranlxs2);
 	gsl_rng_set(data->rng, time(0));
+
 	// make the phase screen
 	if (_generate_phase_screen(self)) {
 		log_error("Failed to generate phase screen.");
 		return -1;
 	}
+
 	// set types
 	self->type_in = AYLP_T_ANY | AYLP_U_ANY;
 	self->type_out = AYLP_T_BLOCK | AYLP_U_RAD;	// TODO: matrix?
+
 	return 0;
 }
 

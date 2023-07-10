@@ -26,6 +26,10 @@ int udp_sink_init(struct aylp_device *self)
 	memset(&(data->dest_sa), 0, sizeof(data->dest_sa));
 	data->dest_sa.sin_family = AF_INET;
 	int got_params = 0;	// use this to check for params in case ip is 0
+	if (!self->params) {
+		log_error("No params object found.");
+		return -1;
+	}
 	json_object_object_foreach(self->params, key, val) {
 		if (key[0] == '_') {
 			// keys starting with _ are comments

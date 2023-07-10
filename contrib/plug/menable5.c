@@ -26,6 +26,10 @@ int menable5_init(struct aylp_device *self)
 	self->close = &menable5_close;
 
 	// parse the params json into our data struct
+	if (!self->params) {
+		log_error("No params object found.");
+		return -1;
+	}
 	json_object_object_foreach(self->params, key, val) {
 		if (key[0] == '_') {
 			// keys starting with _ are comments

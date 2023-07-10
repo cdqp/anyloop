@@ -12,6 +12,10 @@ int delay_init(struct aylp_device *self)
 	self->device_data = calloc(1, sizeof(struct timespec)
 	);
 	struct timespec *ts = self->device_data;
+	if (!self->params) {
+		log_error("No params object found.");
+		return -1;
+	}
 	json_object_object_foreach(self->params, key, val) {
 		// parse parameters
 		if (key[0] == '_') {

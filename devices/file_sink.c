@@ -14,6 +14,10 @@ int file_sink_init(struct aylp_device *self)
 		1, sizeof(struct aylp_file_sink_data)
 	);
 	struct aylp_file_sink_data *data = self->device_data;
+	if (!self->params) {
+		log_error("No params object found.");
+		return -1;
+	}
 	json_object_object_foreach(self->params, key, val) {
 		// parse parameters
 		if (key[0] == '_') {
