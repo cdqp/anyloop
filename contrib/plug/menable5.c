@@ -195,6 +195,7 @@ int menable5_close(struct aylp_device *self)
 	struct aylp_menable5_data *data = self->device_data;
 	ioctl(data->fg, MEN_IOC(FG_STOP_CMD,0), data->control.chan);
 	ioctl(data->fg, MEN_IOC(FREE_VIRT_BUFFER,0), data->memory.headnr);
+	free((char *)data->fb); data->fb = 0;
 	free(data); self->device_data = 0;
 	return 0;
 }

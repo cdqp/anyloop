@@ -11,19 +11,19 @@ gsl_dep = dependency('gsl')
 deps = [json_dep, gsl_dep]
 
 project_source_files = [
-	'src/block.c',
-	'src/config.c',
-	'src/device.c',
-	'src/logging.c',
-	'src/anyloop.c',
-	'src/devices/delay.c',
-	'src/devices/file_sink.c',
-	'src/devices/logger.c',
-	'src/devices/udp_sink.c',
-	'src/devices/vonkarman_stream.c',
+	'libaylp/logging.c',
+	'libaylp/block.c',
+	'libaylp/config.c',
+	'libaylp/anyloop.c',
+	'devices/device.c',
+	'devices/delay.c',
+	'devices/file_sink.c',
+	'devices/logger.c',
+	'devices/udp_sink.c',
+	'devices/vonkarman_stream.c',
 ]
 
-incdir = include_directories('include')
+incdir = include_directories('libaylp')
 
 executable('anyloop', project_source_files,
 	install: true,
@@ -32,7 +32,7 @@ executable('anyloop', project_source_files,
 )
 
 shared_library('plugin_example',
-	['contrib/plug/plugin_example.c', 'src/logging.c'],
+	['contrib/plug/plugin_example.c', 'libaylp/logging.c'],
 	name_prefix: '',
 	install: true,
 	dependencies: deps,
@@ -41,7 +41,7 @@ shared_library('plugin_example',
 )
 
 shared_library('menable5',
-	['contrib/plug/menable5.c', 'src/logging.c'],
+	['contrib/plug/menable5.c', 'libaylp/logging.c'],
 	name_prefix: '',
 	install: true,
 	dependencies: deps,

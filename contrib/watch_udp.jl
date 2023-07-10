@@ -4,6 +4,8 @@ using ArgParse
 using Plots; gr()
 using Sockets
 
+# TODO: update for new format
+
 struct AYLP_Header
     magic::Vector{Char}
     aylp_blocktype::UInt64

@@ -1,6 +1,6 @@
 // this plugin fetches frames from https://github.com/cdqp/menable-driver
-#ifndef _AYLP_VONKARMAN_SCREEN_H
-#define _AYLP_VONKARMAN_SCREEN_H
+#ifndef _AYLP_MENABLE5_H
+#define _AYLP_MENABLE5_H
 
 #include <asm/ioctl.h>
 
