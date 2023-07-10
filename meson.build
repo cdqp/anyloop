@@ -1,12 +1,10 @@
 project(
 	'anyloop',
 	'c',
-	default_options: ['warning_level=3', 'optimization=3']
+	default_options: ['c_std=gnu2x', 'warning_level=3', 'optimization=3']
 	#default_options: ['warning_level=everything', 'optimization=3']
 	# this is worth occasionally turning on to check
 )
-
-add_global_arguments(['-std=gnu2x'], language : 'c')
 
 json_dep = dependency('json-c')
 gsl_dep = dependency('gsl')
@@ -25,7 +23,7 @@ project_source_files = [
 	'src/devices/vonkarman_stream.c',
 ]
 
-incdir = include_directories('src')
+incdir = include_directories('include')
 
 executable('anyloop', project_source_files,
 	install: true,
