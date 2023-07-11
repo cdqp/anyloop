@@ -11,6 +11,7 @@
 struct aylp_state state = {0};
 struct aylp_conf conf;
 
+static bool sigint_recieved = false;
 
 static void cleanup(void)
 {
@@ -29,13 +30,12 @@ static void cleanup(void)
 }
 
 
-void handle_signal(int sig)
+void handle_signal(int sig, siginfo_t *info, void *context)
 {
+	UNUSED(info);
+	UNUSED(context);
 	if (sig == SIGINT) {
-		log_info("Caught SIGINT; cleaning up");
-		cleanup();
-		log_info("Exiting now!");
-		exit(0);
+		sigint_recieved = true;
 	}
 }
 
@@ -81,7 +81,11 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	if (signal(SIGINT, handle_signal) == SIG_ERR) {
+	struct sigaction signal_handler;
+	signal_handler.sa_flags = SA_SIGINFO;
+	sigemptyset(&signal_handler.sa_mask);
+	signal_handler.sa_sigaction = handle_signal;
+	if (sigaction(SIGINT, &signal_handler, NULL) == -1) {
 		log_fatal("Failed to attach signal handler to SIGINT.");
 		return EXIT_FAILURE;
 	}
@@ -140,8 +144,8 @@ int main(int argc, char **argv)
 			units_cur = d.units_out;
 	}
 
-	while (state.header.status ^ AYLP_DONE) {
-		for (size_t idx=0; idx<conf.n_devices; idx++) {
+	while (!sigint_recieved && state.header.status ^ AYLP_DONE) {
+		for (size_t idx=0; !sigint_recieved && idx<conf.n_devices; idx++) {
 			struct aylp_device *dev = &conf.devices[idx];
 			if (dev->process) {
 				dev->process(dev, &state);
@@ -155,7 +159,10 @@ int main(int argc, char **argv)
 		}
 	}
 
-	log_info("AYLP_DONE was set; cleaning up");
+	if (sigint_recieved)
+		log_info("Caught SIGINT; cleaning up");
+	else
+		log_info("AYLP_DONE was set; cleaning up");
 	cleanup();
 	log_info("Exiting now!");
 	return EXIT_SUCCESS;
