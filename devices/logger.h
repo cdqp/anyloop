@@ -1,5 +1,5 @@
-#ifndef _AYLP_LOGGER_H
-#define _AYLP_LOGGER_H
+#ifndef AYLP_DEVICES_LOGGER_H_
+#define AYLP_DEVICES_LOGGER_H_
 
 #include "anyloop.h"
 

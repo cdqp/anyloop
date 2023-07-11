@@ -1,6 +1,6 @@
 // simplified from <https://github.com/rxi/log.c>
-#ifndef _AYLP_LOGGING_H
-#define _AYLP_LOGGING_H
+#ifndef AYLP_LOGGING_H_
+#define AYLP_LOGGING_H_
 
 #include <stdio.h>
 #include <stdarg.h>

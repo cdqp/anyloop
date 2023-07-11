@@ -1,5 +1,5 @@
-#ifndef _AYLP_UDP_SINK_H
-#define _AYLP_UDP_SINK_H
+#ifndef AYLP_DEVICES_UDP_SINK_H_
+#define AYLP_DEVICES_UDP_SINK_H_
 
 #include <netinet/in.h>
 #include <sys/socket.h>

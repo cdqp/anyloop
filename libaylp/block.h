@@ -1,5 +1,7 @@
-#ifndef _AYLP_BLOCK_H
-#define _AYLP_BLOCK_H
+#ifndef AYLP_BLOCK_H_
+#define AYLP_BLOCK_H_
+
+#include "anyloop.h"
 
 #include <gsl/gsl_matrix.h>
 

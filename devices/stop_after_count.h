@@ -1,5 +1,5 @@
-#ifndef _AYLP_STOP_AFTER_COUNT_H
-#define _AYLP_STOP_AFTER_COUNT_H
+#ifndef AYLP_DEVICES_STOP_AFTER_COUNT_H_
+#define AYLP_DEVICES_STOP_AFTER_COUNT_H_
 
 #include "anyloop.h"
 

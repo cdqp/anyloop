@@ -1,5 +1,5 @@
-#ifndef _AYLP_ANYLOOP_H
-#define _AYLP_ANYLOOP_H
+#ifndef AYLP_ANYLOOP_H_
+#define AYLP_ANYLOOP_H_
 
 #define _GNU_SOURCE
 

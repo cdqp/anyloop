@@ -1,5 +1,5 @@
-#ifndef _AYLP_DELAY_H
-#define _AYLP_DELAY_H
+#ifndef AYLP_DEVICES_DELAY_H_
+#define AYLP_DEVICES_DELAY_H_
 
 #include "anyloop.h"
 

@@ -1,5 +1,5 @@
-#ifndef _AYLP_DEVICE_H
-#define _AYLP_DEVICE_H
+#ifndef AYLP_DEVICES_DEVICE_H_
+#define AYLP_DEVICES_DEVICE_H_
 
 #include "devices/delay.h"
 #include "devices/file_sink.h"

@@ -1,5 +1,5 @@
-#ifndef _AYLP_FILE_SINK_H
-#define _AYLP_FILE_SINK_H
+#ifndef AYLP_DEVICES_FILE_SINK_H_
+#define AYLP_DEVICES_FILE_SINK_H_
 
 #include <stdio.h>
 
