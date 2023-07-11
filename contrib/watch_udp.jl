@@ -4,11 +4,11 @@ using ArgParse
 using Plots; gr()
 using Sockets
 
-# TODO: update for new format
-
 struct AYLP_Header
     magic::Vector{Char}
-    aylp_blocktype::UInt64
+    aylp_status::UInt16
+    aylp_type::UInt8
+    aylp_units::UInt8
     log_dim_y::UInt64
     log_dim_x::UInt64
     pitch_y::Float64
@@ -21,18 +21,21 @@ struct AYLP_Data
 end
 
 function Base.read(io::IO, ::Type{AYLP_Header})
-    magic = Vector{Char}(undef, 8)
-    for i in 1:8
+    magic = Vector{Char}(undef, 4)
+    for i in 1:4
         magic[i] = read(io, Char)
     end
-    @assert String(magic) == "AYLPDATA";
-    aylp_blocktype = read(io, UInt64)
+    @assert String(magic) == "AYLP";
+    aylp_status = read(io, UInt16)
+    aylp_units = read(io, UInt8)
+    aylp_type = read(io, UInt8)
     log_dim_y = read(io, UInt64)
     log_dim_x = read(io, UInt64)
     pitch_y = read(io, Float64)
     pitch_x = read(io, Float64)
     return AYLP_Header(
-        magic, aylp_blocktype, log_dim_y, log_dim_x, pitch_y, pitch_x
+        magic, aylp_status, aylp_units, aylp_type,
+        log_dim_y, log_dim_x, pitch_y, pitch_x
     )
 end
 
@@ -56,6 +59,7 @@ args = parse_args(argset)
 
 sock = UDPSocket()
 if !bind(sock, ip"0.0.0.0", parse(Int, args["port"]))
+#if !bind(sock, ip"0.0.0.0", 64730)
     throw(SystemError("couldn't open port"))
 end
 

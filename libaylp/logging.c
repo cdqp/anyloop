@@ -65,12 +65,14 @@ void log_impl(int level, const char *file, int line, const char *fmt, ...)
 		return;
 
 	// perform color check
-	const char *color_prefix = "";
-	const char *color_suffix = "";
+	const char *level_prefix = "";
+	const char *file_prefix = "";
+	const char *color_reset = "";
 
 	if (log_status.use_color) {
-		color_prefix = level_colors[level];
-		color_suffix = "\x1b[0m";
+		level_prefix = level_colors[level];
+		file_prefix = "\x1b[37m";
+		color_reset = "\x1b[0m";
 	}
 
 	// format timestamp string
@@ -89,9 +91,9 @@ void log_impl(int level, const char *file, int line, const char *fmt, ...)
 
 	// display log message
 	fprintf(
-		stderr, "%s %s%-5s%s %s:%d: ",
-		time_str, color_prefix, level_strings[level], color_suffix,
-		file, line
+		stderr, "%s %s%-5s%s %s:%d:%s ",
+		time_str, level_prefix, level_strings[level], file_prefix,
+		file, line, color_reset
 	);
 
 	va_list args;

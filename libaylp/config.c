@@ -21,6 +21,10 @@ struct aylp_conf read_config(const char *file)
 			// keys starting with _ are comments
 		} else if (!strcmp(tlkey, "pipeline")) {
 			// parse devices in pipeline
+			if (!json_object_is_type(sub1, json_type_array)) {
+				log_fatal("Pipeline object must be array");
+				exit(1);
+			}
 			ret.n_devices = json_object_array_length(sub1);
 			ret.devices = (struct aylp_device *)calloc(
 				ret.n_devices, sizeof(struct aylp_device)
