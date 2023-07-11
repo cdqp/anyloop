@@ -23,6 +23,7 @@ int udp_sink_init(struct aylp_device *self)
 	data->sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (data->sock == -1) {
 		log_error("Couldn't initialize socket: %s", strerror(errno));
+		return -1;
 	}
 	memset(&(data->dest_sa), 0, sizeof(data->dest_sa));
 	data->dest_sa.sin_family = AF_INET;
@@ -66,6 +67,7 @@ int udp_sink_init(struct aylp_device *self)
 	);
 	if (err) {
 		log_error("Couldn't connect: %s", strerror(errno));
+		return -1;
 	}
 	// set types and units
 	self->type_in = AYLP_T_ANY;
@@ -105,7 +107,7 @@ int udp_sink_process(struct aylp_device *self, struct aylp_state *state)
 	if (needs_free) {
 		xfree(data->bytes.data);
 	}
-	return 0;
+	return (err < 0) ? -1 : 0;
 }
 
 

@@ -1,6 +1,7 @@
 #include <dlfcn.h>
 #include <libgen.h>
 #include <string.h>
+#include <stdbool.h>
 #include "anyloop.h"
 #include "logging.h"
 #include "device.h"
@@ -9,13 +10,13 @@
 
 int init_device(struct aylp_device *dev)
 {
-	int device_found = 0;
+	bool device_found = false;
 
 	if (!strncmp(dev->uri, "anyloop", sizeof("anyloop")-1)) {
 		static const size_t imax = sizeof(init_map)/sizeof(init_map[0]);
 		for (size_t idx=0; idx<imax; idx++) {
 			if (!strcmp(init_map[idx].uri, dev->uri)) {
-				device_found = 1;
+				device_found = true;
 				dev->init = init_map[idx].init_fun;
 			}
 		}
@@ -28,7 +29,7 @@ int init_device(struct aylp_device *dev)
 			);
 			return -1;
 		}
-		device_found = 1;
+		device_found = true;
 		char *bn = xstrdup(basename(path));
 		char *dot = strchr(bn, '.');
 		if (dot) {
@@ -46,8 +47,8 @@ int init_device(struct aylp_device *dev)
 
 	if (!device_found) {
 		log_error("Could not find device %s", dev->uri);
-	}
-	if (dev->init) {
+		return -1;
+	} else if (dev->init) {
 		log_info("Initializing %s", dev->uri);
 		return dev->init(dev);
 	} else {

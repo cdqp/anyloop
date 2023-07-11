@@ -1,4 +1,5 @@
 #include <json-c/json.h>
+#include <stdlib.h>
 #include "anyloop.h"
 #include "logging.h"
 #include "config.h"
@@ -13,7 +14,7 @@ struct aylp_conf read_config(const char *file)
 	struct json_object *jobj = json_object_from_file(file);
 	if (!jobj) {
 		log_fatal(json_util_get_last_err());
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	json_object_object_foreach(jobj, tlkey, sub1) {

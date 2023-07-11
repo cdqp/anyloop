@@ -223,8 +223,8 @@ int vonkarman_stream_init(struct aylp_device *self)
 		);
 		data->win_width = 1; data->win_height = 1;
 	}
-	if (abs(data->cur_step_x) > data->screen_size - data->win_width
-	|| abs(data->cur_step_y) > data->screen_size - data->win_height) {
+	if ((size_t) abs(data->cur_step_x) > data->screen_size - data->win_width
+	|| (size_t) abs(data->cur_step_y) > data->screen_size - data->win_height) {
 		log_error("Step size > size - width or size - height; "
 			"falling back to 0,0"
 		);
