@@ -1,0 +1,19 @@
+name: build
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Install dependencies
+      run: sudo apt-get install -y libgsl-dev libjson-c-dev
+    - name: Meson Build
+      uses: BSFishy/meson-build@v1.0.3
+      with:
+        # The action to run
+        action: build
