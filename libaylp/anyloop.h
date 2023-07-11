@@ -31,11 +31,8 @@ _Static_assert(sizeof(size_t) == 8, "we need size_t to be 64-bit for gsl");
 
 
 /** Flags pertaining to loop status. */
-#if __STDC_VERSION__ > 201710L
-enum aylp_status:uint16_t {
-#else
-enum aylp_status {
-#endif
+typedef uint16_t aylp_status;
+enum {
 	/** Signals that we are done with the loop. */
 	AYLP_DONE	= 1 << 0,
 	// add more as necessary
@@ -46,11 +43,8 @@ enum aylp_status {
  * Devices must specify their input and output types after they are initialized.
  * Null is a special type that means "unaltered" when set as a device output.
  */
-#if __STDC_VERSION__ > 201710L	// check for support of specifying enum type
-enum aylp_type:uint8_t {
-#else
-enum aylp_type {
-#endif
+typedef uint8_t aylp_type;
+enum {
 	/** Indicates that there is no data in the pipeline yet. */
 	AYLP_T_NONE	= 1 << 0,
 	/** For gsl_block. */
@@ -73,11 +67,8 @@ enum aylp_type {
  * Devices must specify their input and output types after they are initialized.
  * Null is a special type that means "unaltered" when set as a device output.
  */
-#if __STDC_VERSION__ > 201710L	// check for support of specifying enum type
-enum aylp_units:uint8_t {
-#else
-enum aylp_units {
-#endif
+typedef uint8_t aylp_units;
+enum {
 	/** Indicates that there is no data in the pipeline yet. */
 	AYLP_U_NONE	= 1 << 0,
 	/** Signals that the units are in radians. */
@@ -104,14 +95,9 @@ struct aylp_header {
 	uint32_t magic;
 
 	/** Status flags and type of data. */
-	#if __STDC_VERSION__ > 201710L
-	enum aylp_status status;	// uint16_t
-	enum aylp_type type;		// uint8_t
-	enum aylp_units units;		// uint8_t
-	#else
-	uint16_t status;
-	uint16_t type;
-	#endif
+	aylp_status status;	// uint16_t
+	aylp_type type;		// uint8_t
+	aylp_units units;	// uint8_t
 
 	/** Logical dimensions (like the size of a matrix).
 	* For example, commands to a DM might usually be seen as vectors, but
@@ -174,10 +160,10 @@ struct aylp_device {
 	* compatible with the output type and units of the last device in the
 	* pipeline as well as AYLP_T_NONE|AYLP_U_NONE.
 	*/
-	enum aylp_type type_in;
-	enum aylp_units units_in;
-	enum aylp_type type_out;
-	enum aylp_units units_out;
+	aylp_type type_in;
+	aylp_units units_in;
+	aylp_type type_out;
+	aylp_units units_out;
 
 	/** Device parameters.
 	* This is taken directly from the json configuration file. For example,

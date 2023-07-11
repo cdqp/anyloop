@@ -81,8 +81,8 @@ int main(int argc, char *argv[])
 	}
 
 	// typecheck the device pipeline
-	enum aylp_type type_cur = AYLP_T_NONE;
-	enum aylp_units units_cur = AYLP_U_NONE;
+	aylp_type type_cur = AYLP_T_NONE;
+	aylp_units units_cur = AYLP_U_NONE;
 	// first device must be compatible with _NONE and output of last device
 	type_cur |= conf.devices[conf.n_devices-1].type_out;
 	units_cur |= conf.devices[conf.n_devices-1].units_out;
