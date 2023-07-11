@@ -1,7 +1,7 @@
 project(
 	'anyloop',
 	'c',
-	default_options: ['c_std=gnu2x', 'warning_level=3', 'optimization=3']
+	default_options: ['c_std=gnu17', 'warning_level=3', 'optimization=3']
 	#default_options: ['warning_level=everything', 'optimization=3']
 	# this is worth occasionally turning on to check
 )

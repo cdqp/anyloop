@@ -53,7 +53,7 @@ int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 		bytes->size = sizeof(double) * state->block->size;
 		bytes->data = (unsigned char *)state->block->data;
 		return 0;
-	case AYLP_T_VECTOR:
+	case AYLP_T_VECTOR: {
 		gsl_vector *v = state->vector;	// brevity
 		bytes->size = sizeof(double) * v->size;
 		if (LIKELY(v->stride == 1)) {
@@ -69,7 +69,8 @@ int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 			}
 			return 1;
 		}
-	case AYLP_T_MATRIX:
+	}
+	case AYLP_T_MATRIX: {
 		gsl_matrix *m = state->matrix;	// brevity
 		bytes->size = sizeof(double) * m->size1 * m->size2;
 		if (LIKELY(m->tda == m->size2)) {
@@ -88,6 +89,7 @@ int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 			}
 			return 1;
 		}
+	}
 	case AYLP_T_BYTES:
 		bytes = state->bytes;
 		return 0;
