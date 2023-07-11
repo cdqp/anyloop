@@ -5,6 +5,7 @@
 #include "anyloop.h"
 #include "logging.h"
 #include "config.h"
+#include "xalloc.h"
 #include "../devices/device.h"
 
 struct aylp_state state = {0};
@@ -21,7 +22,7 @@ static void cleanup(void)
 		log_trace("Closed %s", dev->uri);
 	}
 	conf.n_devices = 0;
-	free(conf.devices); conf.devices = 0;
+	xfree(conf.devices);
 	// we actually *don't* want to free the state block/vector/matrix/bytes,
 	// because it will never be the only pointer to that data, and will have
 	// been freed by whatever device really owns that data.

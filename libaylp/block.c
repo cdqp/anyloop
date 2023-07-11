@@ -4,6 +4,7 @@
 #include "anyloop.h"
 #include "logging.h"
 #include "block.h"
+#include "xalloc.h"
 
 
 gsl_block *mat2blk(gsl_matrix *m)
@@ -60,8 +61,7 @@ int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 			bytes->data = (unsigned char *)v->data;
 			return 0;
 		} else {
-			bytes->data = (unsigned char *)malloc(bytes->size);
-			if (!bytes->data) return errno;
+			bytes->data = xmalloc(bytes->size);
 			for (size_t i = 0; i < v->size; i++) {
 				bytes->data[i*sizeof(double)] =
 					v->data[i * v->stride]
@@ -79,8 +79,7 @@ int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 			return 0;
 		} else {
 			// rows are not contiguous
-			bytes->data = (unsigned char *)malloc(bytes->size);
-			if (!bytes->data) return errno;
+			bytes->data = xmalloc(bytes->size);
 			for (size_t i = 0; i < m->size1; i++) {
 				memcpy(bytes->data + sizeof(double)*i*m->size2,
 					m->data + i*m->tda,

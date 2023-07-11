@@ -15,6 +15,7 @@ project_source_files = [
 	'libaylp/block.c',
 	'libaylp/config.c',
 	'libaylp/anyloop.c',
+	'libaylp/xalloc.c',
 	'devices/device.c',
 	'devices/delay.c',
 	'devices/file_sink.c',

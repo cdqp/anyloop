@@ -10,20 +10,16 @@
 #include "block.h"
 #include "logging.h"
 #include "udp_sink.h"
+#include "xalloc.h"
 
 
 int udp_sink_init(struct aylp_device *self)
 {
 	self->process = &udp_sink_process;
 	self->close = &udp_sink_close;
-	self->device_data = (struct aylp_udp_sink_data *)calloc(
-		1, sizeof(struct aylp_udp_sink_data)
-	);
+	self->device_data = xcalloc(1, sizeof(struct aylp_udp_sink_data));
 	struct aylp_udp_sink_data *data = self->device_data;
-	if (!data) {
-		log_error("Couldn't allocate device data: %s", strerror(errno));
-		return -1;
-	}
+
 	data->sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (data->sock == -1) {
 		log_error("Couldn't initialize socket: %s", strerror(errno));
@@ -107,7 +103,7 @@ int udp_sink_process(struct aylp_device *self, struct aylp_state *state)
 		}
 	}
 	if (needs_free) {
-		free(data->bytes.data); data->bytes.data = 0;
+		xfree(data->bytes.data);
 	}
 	return 0;
 }

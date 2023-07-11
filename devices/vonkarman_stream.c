@@ -13,6 +13,7 @@
 #include "block.h"
 #include "logging.h"
 #include "vonkarman_stream.h"
+#include "xalloc.h"
 
 
 /** Return the Fourier amplitude (not power) of the von Kármán spectrum.
@@ -154,14 +155,8 @@ int vonkarman_stream_init(struct aylp_device *self)
 {
 	self->process = &vonkarman_stream_process;
 	self->close = &vonkarman_stream_close;
-	self->device_data = (struct aylp_vonkarman_stream_data *)calloc(
-		1, sizeof(struct aylp_vonkarman_stream_data)
-	);
+	self->device_data = xcalloc(1, sizeof(struct aylp_vonkarman_stream_data));
 	struct aylp_vonkarman_stream_data *data = self->device_data;
-	if (!data) {
-		log_error("Couldn't allocate device data: %s", strerror(errno));
-		return -1;
-	}
 
 	// some default params
 	data->win_width = 10;
@@ -305,11 +300,11 @@ int vonkarman_stream_close(struct aylp_device *self)
 	json_object_object_foreach(self->params, key, _) {
 		json_object_object_del(self->params, key);
 	}
-	free(self->params); self->params = 0;
+	xfree(self->params);
 	struct aylp_vonkarman_stream_data *data = self->device_data;
 	gsl_rng_free(data->rng); data->rng = 0;
 	gsl_matrix_free(data->phase_screen); data->phase_screen = 0;
-	free(data); self->device_data = 0;
+	xfree(self->device_data);
 	return 0;
 }
 

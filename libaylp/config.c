@@ -2,6 +2,7 @@
 #include "anyloop.h"
 #include "logging.h"
 #include "config.h"
+#include "xalloc.h"
 
 
 struct aylp_conf read_config(const char *file)
@@ -22,9 +23,7 @@ struct aylp_conf read_config(const char *file)
 		} else if (!strcmp(tlkey, "pipeline")) {
 			// parse devices in pipeline
 			ret.n_devices = json_object_array_length(sub1);
-			ret.devices = (struct aylp_device *)calloc(
-				ret.n_devices, sizeof(struct aylp_device)
-			);
+			ret.devices = xcalloc(ret.n_devices, sizeof(struct aylp_device));
 			log_info("Seeing %d devices", ret.n_devices);
 			for (size_t idx=0; idx<ret.n_devices; idx++) {
 				json_object *sub2 = json_object_array_get_idx(
@@ -39,7 +38,7 @@ struct aylp_conf read_config(const char *file)
 								sub4
 							);
 						ret.devices[idx].uri =
-							strdup(uri);
+							xstrdup(uri);
 						log_info("Found device with "
 							"uri: %s",
 							ret.devices[idx].uri
@@ -70,7 +69,7 @@ struct aylp_conf read_config(const char *file)
 	json_object_object_foreach(jobj, key, _) {
 		json_object_object_del(jobj, key);
 	}
-	free(jobj); jobj = 0;
+	xfree(jobj);
 	return ret;
 }
 

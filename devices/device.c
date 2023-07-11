@@ -4,6 +4,7 @@
 #include "anyloop.h"
 #include "logging.h"
 #include "device.h"
+#include "xalloc.h"
 
 
 int init_device(struct aylp_device *dev)
@@ -28,7 +29,7 @@ int init_device(struct aylp_device *dev)
 			return -1;
 		}
 		device_found = 1;
-		char *bn = strdup(basename(path));
+		char *bn = xstrdup(basename(path));
 		char *dot = strchr(bn, '.');
 		if (dot) {
 			*dot = 0;	// strip file extension
@@ -37,7 +38,7 @@ int init_device(struct aylp_device *dev)
 		*(void **) (&dev->init) = dlsym(
 			plug_handle, strcat(bn, "_init")
 		);
-		free(bn); bn = 0;
+		xfree(bn);
 	} else {
 		log_error("Device has unsupported URI scheme.");
 		return -1;
