@@ -5,20 +5,14 @@
 #include "block.h"
 #include "logging.h"
 #include "file_sink.h"
-
+#include "xalloc.h"
 
 int file_sink_init(struct aylp_device *self)
 {
 	self->process = &file_sink_process;
 	self->close = &file_sink_close;
-	self->device_data = (struct aylp_file_sink_data*)calloc(
-		1, sizeof(struct aylp_file_sink_data)
-	);
+	self->device_data = xcalloc(1, sizeof(struct aylp_file_sink_data));
 	struct aylp_file_sink_data *data = self->device_data;
-	if (!data) {
-		log_error("Couldn't allocate device data: %s", strerror(errno));
-		return -1;
-	}
 	if (!self->params) {
 		log_error("No params object found.");
 		return -1;
@@ -69,7 +63,7 @@ int file_sink_process(struct aylp_device *self, struct aylp_state *state)
 		return -1;
 	}
 	if (needs_free) {
-		free(data->bytes.data); data->bytes.data = 0;
+		xfree(data->bytes.data);
 	}
 	return 0;
 }
@@ -80,11 +74,11 @@ int file_sink_close(struct aylp_device *self)
 	json_object_object_foreach(self->params, key, _) {
 		json_object_object_del(self->params, key);
 	}
-	free(self->params); self->params = 0;
+	xfree(self->params);
 	struct aylp_file_sink_data *data = self->device_data;
 	fflush(data->fp);
 	fclose(data->fp);
-	free(data); self->device_data = 0;
+	xfree(self->device_data);
 	return 0;
 }
 

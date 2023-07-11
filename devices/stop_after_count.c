@@ -1,20 +1,15 @@
 #include "anyloop.h"
 #include "logging.h"
 #include "stop_after_count.h"
+#include "xalloc.h"
 
 
 int stop_after_count_init(struct aylp_device *self)
 {
 	self->process = &stop_after_count_process;
 	self->close = &stop_after_count_close;
-	self->device_data = (size_t *)calloc(1, sizeof(size_t));
-	size_t *count = (size_t *)self->device_data;
-	if (!count) {
-		log_error("Couldn't allocate device data. All we needed was "
-			"one size_t; what the hell is wrong with your system?"
-		);
-		return -1;
-	}
+	self->device_data = xcalloc(1, sizeof(size_t));
+	size_t *count = self->device_data;
 	if (!self->params) {
 		log_error("No params object found.");
 		return -1;

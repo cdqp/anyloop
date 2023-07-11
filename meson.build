@@ -15,6 +15,7 @@ project_source_files = [
 	'libaylp/block.c',
 	'libaylp/config.c',
 	'libaylp/anyloop.c',
+	'libaylp/xalloc.c',
 	'devices/device.c',
 	'devices/delay.c',
 	'devices/file_sink.c',
@@ -29,24 +30,27 @@ incdir = include_directories('libaylp')
 executable('anyloop', project_source_files,
 	install: true,
 	dependencies: deps,
-	include_directories: incdir
+	include_directories: incdir,
+	export_dynamic: true
 )
 
 shared_library('plugin_example',
-	['contrib/plug/plugin_example.c', 'libaylp/logging.c'],
+	['contrib/plug/plugin_example.c'],
 	name_prefix: '',
 	install: true,
 	dependencies: deps,
 	install_dir: 'plugins',
-	include_directories: incdir
+	include_directories: incdir,
+	override_options: 'b_lundef=false'
 )
 
 shared_library('menable5',
-	['contrib/plug/menable5.c', 'libaylp/logging.c'],
+	['contrib/plug/menable5.c'],
 	name_prefix: '',
 	install: true,
 	dependencies: deps,
 	install_dir: 'plugins',
-	include_directories: incdir
+	include_directories: incdir,
+	override_options: 'b_lundef=false'
 )
 

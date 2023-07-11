@@ -3,18 +3,15 @@
 #include "anyloop.h"
 #include "logging.h"
 #include "delay.h"
+#include "xalloc.h"
 
 
 int delay_init(struct aylp_device *self)
 {
 	self->process = &delay_process;
 	self->close = &delay_close;
-	self->device_data = calloc(1, sizeof(struct timespec));
+	self->device_data = xcalloc(1, sizeof(struct timespec));
 	struct timespec *ts = self->device_data;
-	if (!ts) {
-		log_error("Couldn't allocate device data: %s", strerror(errno));
-		return -1;
-	}
 	if (!self->params) {
 		log_error("No params object found.");
 		return -1;
@@ -52,7 +49,7 @@ int delay_process(struct aylp_device *self, struct aylp_state *state)
 
 int delay_close(struct aylp_device *self)
 {
-	free(self->device_data); self->device_data = 0;
+	xfree(self->device_data);
 	return 0;
 }
 

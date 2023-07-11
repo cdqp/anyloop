@@ -1,7 +1,9 @@
 #include <json-c/json.h>
+#include <stdlib.h>
 #include "anyloop.h"
 #include "logging.h"
 #include "config.h"
+#include "xalloc.h"
 
 
 struct aylp_conf read_config(const char *file)
@@ -12,7 +14,7 @@ struct aylp_conf read_config(const char *file)
 	struct json_object *jobj = json_object_from_file(file);
 	if (!jobj) {
 		log_fatal(json_util_get_last_err());
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	json_object_object_foreach(jobj, tlkey, sub1) {
@@ -26,9 +28,7 @@ struct aylp_conf read_config(const char *file)
 				exit(1);
 			}
 			ret.n_devices = json_object_array_length(sub1);
-			ret.devices = (struct aylp_device *)calloc(
-				ret.n_devices, sizeof(struct aylp_device)
-			);
+			ret.devices = xcalloc(ret.n_devices, sizeof(struct aylp_device));
 			log_info("Seeing %d devices", ret.n_devices);
 			for (size_t idx=0; idx<ret.n_devices; idx++) {
 				json_object *sub2 = json_object_array_get_idx(
@@ -43,7 +43,7 @@ struct aylp_conf read_config(const char *file)
 								sub4
 							);
 						ret.devices[idx].uri =
-							strdup(uri);
+							xstrdup(uri);
 						log_info("Found device with "
 							"uri: %s",
 							ret.devices[idx].uri
@@ -74,7 +74,7 @@ struct aylp_conf read_config(const char *file)
 	json_object_object_foreach(jobj, key, _) {
 		json_object_object_del(jobj, key);
 	}
-	free(jobj); jobj = 0;
+	xfree(jobj);
 	return ret;
 }
 

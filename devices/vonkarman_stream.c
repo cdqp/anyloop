@@ -2,6 +2,8 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <time.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <gsl/gsl_fft_halfcomplex.h>
 #include <gsl/gsl_fft_real.h>
 #include <gsl/gsl_math.h>
@@ -13,6 +15,7 @@
 #include "block.h"
 #include "logging.h"
 #include "vonkarman_stream.h"
+#include "xalloc.h"
 
 
 /** Return the Fourier amplitude (not power) of the von Kármán spectrum.
@@ -45,29 +48,19 @@ static double karman_spec(double L0, double r0, double Gx, double Gy,
  */
 static void backward_fft(double data[], size_t stride, size_t n)
 {
-	int err;
-	// check if size is power of 2
-	//if (!(n & (n-1))) {
-	// just kidding, do NOT do this; the radix2 function expects the real
-	// and imaginary parts to be far away from one another; if you uncomment
-	// the above power-of-2 check, make sure to shift things around or
-	// something (seems not worth it)
-	if (0) {
-		err = gsl_fft_halfcomplex_radix2_backward(data, stride, n);
-	} else {
-		gsl_fft_halfcomplex_wavetable *wt =
-			gsl_fft_halfcomplex_wavetable_alloc(n);
-		gsl_fft_real_workspace *ws = gsl_fft_real_workspace_alloc(n);
-		// this function is not actually mentioned in the docs, but it's
-		// in gsl_fft_halfcomplex.h in the sources, and presumably works
-		// the same way as gsl_fft_halfcomplex_transform() (which *is*
-		// documented), but with the sign change in the exponent
-		err = gsl_fft_halfcomplex_backward(data, stride, n, wt, ws);
-		gsl_fft_halfcomplex_wavetable_free(wt);
-		gsl_fft_real_workspace_free(ws);
-	}
+	gsl_fft_halfcomplex_wavetable *wt =
+		gsl_fft_halfcomplex_wavetable_alloc(n);
+	gsl_fft_real_workspace *ws = gsl_fft_real_workspace_alloc(n);
+	// this function is not actually mentioned in the docs, but it's
+	// in gsl_fft_halfcomplex.h in the sources, and presumably works
+	// the same way as gsl_fft_halfcomplex_transform() (which *is*
+	// documented), but with the sign change in the exponent
+	int err = gsl_fft_halfcomplex_backward(data, stride, n, wt, ws);
+	gsl_fft_halfcomplex_wavetable_free(wt);
+	gsl_fft_real_workspace_free(ws);
 	if (err) {
 		log_error("Backward fft failed, gsl_errno=%d\n", err);
+		exit(EXIT_FAILURE);
 	}
 	return;
 }
@@ -154,14 +147,8 @@ int vonkarman_stream_init(struct aylp_device *self)
 {
 	self->process = &vonkarman_stream_process;
 	self->close = &vonkarman_stream_close;
-	self->device_data = (struct aylp_vonkarman_stream_data *)calloc(
-		1, sizeof(struct aylp_vonkarman_stream_data)
-	);
+	self->device_data = xcalloc(1, sizeof(struct aylp_vonkarman_stream_data));
 	struct aylp_vonkarman_stream_data *data = self->device_data;
-	if (!data) {
-		log_error("Couldn't allocate device data: %s", strerror(errno));
-		return -1;
-	}
 
 	// some default params
 	data->win_width = 10;
@@ -226,8 +213,8 @@ int vonkarman_stream_init(struct aylp_device *self)
 		);
 		data->win_width = 1; data->win_height = 1;
 	}
-	if (abs(data->cur_step_x) > data->screen_size - data->win_width
-	|| abs(data->cur_step_y) > data->screen_size - data->win_height) {
+	if ((size_t) abs(data->cur_step_x) > data->screen_size - data->win_width
+	|| (size_t) abs(data->cur_step_y) > data->screen_size - data->win_height) {
 		log_error("Step size > size - width or size - height; "
 			"falling back to 0,0"
 		);
@@ -241,9 +228,31 @@ int vonkarman_stream_init(struct aylp_device *self)
 		data->cur_x = 0; data->cur_y = 0;
 	}
 
-	// set up the rng
+	// initialize the RNG with a seed from urandom
+	unsigned long rng_seed = 0;
+	int urandom = open("/dev/urandom", O_RDONLY);
+	if (urandom < 0) {
+		log_error("Failed to open /dev/urandom.");
+		return -1;
+	}
+
+	ssize_t read_len = 0;
+	while (read_len != sizeof(rng_seed)) {
+		read_len = read(urandom, &rng_seed, sizeof(rng_seed));
+		if (read_len < 0) {
+			log_error("Error occured while reading /dev/urandom for a seed: %s",
+				strerror(errno)
+			);
+			return -1;
+		}
+	}
+
+	close(urandom);
+
+	log_trace("RNG Seed: %lx", rng_seed);
+
 	data->rng = gsl_rng_alloc(gsl_rng_ranlxs2);
-	gsl_rng_set(data->rng, time(0));
+	gsl_rng_set(data->rng, rng_seed);
 
 	// make the phase screen
 	if (generate_phase_screen(self)) {
@@ -305,11 +314,11 @@ int vonkarman_stream_close(struct aylp_device *self)
 	json_object_object_foreach(self->params, key, _) {
 		json_object_object_del(self->params, key);
 	}
-	free(self->params); self->params = 0;
+	xfree(self->params);
 	struct aylp_vonkarman_stream_data *data = self->device_data;
 	gsl_rng_free(data->rng); data->rng = 0;
 	gsl_matrix_free(data->phase_screen); data->phase_screen = 0;
-	free(data); self->device_data = 0;
+	xfree(self->device_data);
 	return 0;
 }
 
