@@ -10,7 +10,7 @@ struct aylp_state state = {0};
 struct aylp_conf conf;
 
 
-void _cleanup(void)
+static void cleanup(void)
 {
 	for (size_t idx=0; idx<conf.n_devices; idx++) {
 		struct aylp_device *dev = &conf.devices[idx];
@@ -31,7 +31,7 @@ void handle_signal(int sig)
 {
 	if (sig == SIGINT) {
 		log_info("Caught SIGINT; cleaning up");
-		_cleanup();
+		cleanup();
 		log_info("Exiting now!");
 		exit(0);
 	}
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 			log_fatal("Could not initialize %s.",
 				conf.devices[idx].uri
 			);
-			_cleanup();
+			cleanup();
 			return 1;
 		} else {
 			log_info("Initialized %s.", conf.devices[idx].uri);
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
 	}
 
 	log_info("AYLP_DONE was set; cleaning up");
-	_cleanup();
+	cleanup();
 	log_info("Exiting now!");
 	return 0;
 }

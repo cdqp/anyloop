@@ -27,7 +27,7 @@
  * karmanSpec = atsign(L0,r0,Gx,Gy,x,y) (0.15132*(Gx*Gy)^(-1/2)*r0^(-5/6) ...
  *     * ((x/Gx).^2+(y/Gy).^2+1/L0^2).^(-11/12));
  */
-double _karman_spec(double L0, double r0, double Gx, double Gy,
+static double karman_spec(double L0, double r0, double Gx, double Gy,
 	size_t x, size_t y
 ){
 	return (
@@ -43,7 +43,7 @@ double _karman_spec(double L0, double r0, double Gx, double Gy,
  * Uses gsl, of course, choosing which routine to use depending on if the size
  * is a power of two.
  */
-void _backward_fft(double data[], size_t stride, size_t n)
+static void backward_fft(double data[], size_t stride, size_t n)
 {
 	int err;
 	// check if size is power of 2
@@ -85,7 +85,7 @@ void _backward_fft(double data[], size_t stride, size_t n)
  * means a certain quantity and fluctuates greatly based on time and
  * environment.
  */
-int _generate_phase_screen(struct aylp_device *self)
+static int generate_phase_screen(struct aylp_device *self)
 {
 	struct aylp_vonkarman_stream_data *data = self->device_data;
 	// We assume we're making a square phase screen; this is generally a
@@ -107,7 +107,7 @@ int _generate_phase_screen(struct aylp_device *self)
 	for (size_t x=0; x<M; x++) {
 		for (size_t y=0; y<N; y++) {
 			// von Kármán spectrum amplitude
-			double amp = _karman_spec(
+			double amp = karman_spec(
 				data->L0, data->r0,
 				data->screen_size * data->pitch,
 				data->screen_size * data->pitch,
@@ -126,14 +126,14 @@ int _generate_phase_screen(struct aylp_device *self)
 	// perform a 2D backward-fft by doing a bunch of 1D backward ffts
 	for (size_t x=0; x<M; x++) {
 		// backward fft each row
-		_backward_fft(
+		backward_fft(
 			data->phase_screen->data + x*N,
 			1, N
 		);
 	}
 	for (size_t y=0; y<N; y++) {
 		// backward fft each column
-		_backward_fft(
+		backward_fft(
 			data->phase_screen->data + y,
 			data->phase_screen->tda, M
 		);
@@ -246,7 +246,7 @@ int vonkarman_stream_init(struct aylp_device *self)
 	gsl_rng_set(data->rng, time(0));
 
 	// make the phase screen
-	if (_generate_phase_screen(self)) {
+	if (generate_phase_screen(self)) {
 		log_error("Failed to generate phase screen.");
 		return -1;
 	}
