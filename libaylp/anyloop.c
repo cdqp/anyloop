@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <gsl/gsl_block.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "anyloop.h"
 #include "logging.h"
 #include "config.h"
@@ -43,7 +44,10 @@ int main(int argc, char **argv)
 {
 	UNUSED(argc);
 
-	log_init(LOG_INFO);
+	log_status_t log_status;
+	log_status.level = LOG_INFO;
+	log_status.use_color = isatty(STDERR_FILENO);
+	log_init(&log_status);
 
 	// copy magic number to header
 	state.header.magic = AYLP_MAGIC;
@@ -94,6 +98,7 @@ int main(int argc, char **argv)
 			);
 			return EXIT_FAILURE;
 		}
+		conf.devices[idx].log_status = &log_status;
 		if (init_device(&conf.devices[idx])) {
 			log_fatal("Could not initialize %s.",
 				conf.devices[idx].uri

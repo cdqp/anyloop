@@ -10,6 +10,8 @@
 #include <gsl/gsl_matrix.h>
 #include <json-c/json.h>
 
+#include "logging.h"
+
 // So as to not shoot ourselves in the foot when compiling for different
 // platforms, we need to specify that certain types are the right size.
 #if __STDC_VERSION__ > 201710L
@@ -124,6 +126,7 @@ struct aylp_header {
 struct aylp_state {
 	/** Header */
 	struct aylp_header header;
+
 	/** Pointer to data in the pipeline.
 	* The type should correspond to the current value of header.type.
 	* Typechecking will be done on initialization. For example, a wavefront
@@ -174,6 +177,11 @@ struct aylp_device {
 	* initialized.
 	*/
 	struct json_object *params;
+
+	/** Pointer to log_status structure.
+	* Built-in devices should ignore this. Plug-in devices should log_init
+	* with it. */
+	log_status_t *log_status;
 
 	/** Initializer function.
 	* Devices are initialized in pipeline order at program startup. */

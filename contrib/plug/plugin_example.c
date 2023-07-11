@@ -23,6 +23,7 @@ int plugin_example_close(struct aylp_device *self)
 // this is the function that will be called by name from the main loop
 int plugin_example_init(struct aylp_device *self)
 {
+	log_init(self->log_status);
 	self->process = &plugin_example_process;
 	self->close = &plugin_example_close;
 	// set types and units

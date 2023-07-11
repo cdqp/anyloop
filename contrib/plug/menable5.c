@@ -17,6 +17,7 @@
 int menable5_init(struct aylp_device *self)
 {
 	int err;
+	log_init(self->log_status);
 	self->device_data = (struct aylp_menable5_data *)calloc(
 		1, sizeof(struct aylp_menable5_data)
 	);

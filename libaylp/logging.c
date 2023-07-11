@@ -1,15 +1,10 @@
-// simplified from <https://github.com/rxi/log.c>
 #include "logging.h"
 
 #include <stdio.h>
 #include <time.h>
-#include <unistd.h>
 #include <string.h>
 
-static struct {
-	int level;
-	bool use_color;
-} log_status;
+static log_status_t *log_status;
 
 static const char *level_strings[] = {
 	[LOG_TRACE] = "TRACE",
@@ -30,10 +25,9 @@ static const char *level_colors[] = {
 };
 
 
-void log_init(int level)
+void log_init(log_status_t *status)
 {
-	log_status.level = level;
-	log_status.use_color = isatty(STDERR_FILENO);
+	log_status = status;
 }
 
 bool log_set_level_by_name(char *level_name)
@@ -41,7 +35,7 @@ bool log_set_level_by_name(char *level_name)
 	const size_t num_levels = sizeof(level_strings)/sizeof(*level_strings);
 	for (size_t i=0; i<num_levels; i++) {
 		if (strcmp(level_name, level_strings[i]) == 0) {
-			log_status.level = i;
+			log_status->level = i;
 			return true;
 		}
 
@@ -56,21 +50,23 @@ bool log_set_level_by_name(char *level_name)
 
 int log_get_level(void)
 {
-	return log_status.level;
+	return log_status->level;
 }
 
 void log_impl(int level, const char *file, int line, const char *fmt, ...)
 {
-	if (level < log_status.level)
+	if (level < log_status->level)
 		return;
 
 	// perform color check
-	const char *color_prefix = "";
-	const char *color_suffix = "";
+	const char *level_prefix = "";
+	const char *file_prefix = "";
+	const char *color_reset = "";
 
-	if (log_status.use_color) {
-		color_prefix = level_colors[level];
-		color_suffix = "\x1b[0m";
+	if (log_status->use_color) {
+		level_prefix = level_colors[level];
+		file_prefix = "\x1b[37m";
+		color_reset = "\x1b[0m";
 	}
 
 	// format timestamp string
@@ -89,9 +85,9 @@ void log_impl(int level, const char *file, int line, const char *fmt, ...)
 
 	// display log message
 	fprintf(
-		stderr, "%s %s%-5s%s %s:%d: ",
-		time_str, color_prefix, level_strings[level], color_suffix,
-		file, line
+		stderr, "%s %s%-5s%s %s:%d:%s ",
+		time_str, level_prefix, level_strings[level], file_prefix,
+		file, line, color_reset
 	);
 
 	va_list args;
