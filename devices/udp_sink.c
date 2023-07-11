@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <sys/uio.h>
 #include "anyloop.h"
+#include "block.h"
 #include "logging.h"
 #include "udp_sink.h"
 
@@ -19,9 +20,13 @@ int udp_sink_init(struct aylp_device *self)
 		1, sizeof(struct aylp_udp_sink_data)
 	);
 	struct aylp_udp_sink_data *data = self->device_data;
+	if (!data) {
+		log_error("Couldn't allocate device data: %s", strerror(errno));
+		return -1;
+	}
 	data->sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (data->sock == -1) {
-		log_error("Couldn't initialize socket: error %d", errno);
+		log_error("Couldn't initialize socket: %s", strerror(errno));
 	}
 	memset(&(data->dest_sa), 0, sizeof(data->dest_sa));
 	data->dest_sa.sin_family = AF_INET;
@@ -67,7 +72,7 @@ int udp_sink_init(struct aylp_device *self)
 		log_error("Couldn't connect: %s", strerror(errno));
 	}
 	// set types
-	self->type_in = AYLP_T_BLOCK | AYLP_U_ANY;
+	self->type_in = AYLP_T_ANY | AYLP_U_ANY;
 	self->type_out = 0;
 	return 0;
 }
@@ -76,22 +81,15 @@ int udp_sink_init(struct aylp_device *self)
 int udp_sink_process(struct aylp_device *self, struct aylp_state *state)
 {
 	struct aylp_udp_sink_data *data = self->device_data;
+	// make data contiguous
+	int needs_free = get_contiguous_bytes(&data->bytes, state);
+	if (needs_free < 0) return needs_free;
 	// first thing we send is the aylp header
 	data->iovecs[0].iov_base = &state->header;
 	data->iovecs[0].iov_len = sizeof(state->header);
 	// second thing we send is the block data
-	data->iovecs[1].iov_base = state->block->data;
-	data->iovecs[1].iov_len = sizeof(double) * state->block->size;
-	// check for size consistency
-	if (state->header.log_dim.y * state->header.log_dim.x
-	!= state->block->size) {
-		log_error("Logical dimensions in header are %lu,%lu, but "
-			"block size is %lu; refusing to sink data",
-			state->header.log_dim.y, state->header.log_dim.x,
-			state->block->size
-		);
-		return 0;
-	}
+	data->iovecs[1].iov_base = data->bytes.data;
+	data->iovecs[1].iov_len = data->bytes.size;
 	// write all the data in one go
 	size_t n = data->iovecs[0].iov_len + data->iovecs[1].iov_len;
 	ssize_t err = writev(data->sock, data->iovecs, 2);
@@ -105,6 +103,9 @@ int udp_sink_process(struct aylp_device *self, struct aylp_state *state)
 		} else {
 			log_error("Short write: %d of %d", err, n);
 		}
+	}
+	if (needs_free) {
+		free(data->bytes.data); data->bytes.data = 0;
 	}
 	return 0;
 }

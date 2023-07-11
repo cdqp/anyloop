@@ -12,6 +12,8 @@ struct aylp_udp_sink_data {
 	struct sockaddr_in dest_sa;
 	// iovec for writev so we can write the header and the data in one go
 	struct iovec iovecs[2];
+	// gsl_block_uchar that we will copy pointer to data to
+	gsl_block_uchar bytes;
 };
 
 // initialize udp_sink device

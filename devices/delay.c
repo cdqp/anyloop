@@ -9,9 +9,12 @@ int delay_init(struct aylp_device *self)
 {
 	self->process = &delay_process;
 	self->close = &delay_close;
-	self->device_data = calloc(1, sizeof(struct timespec)
-	);
+	self->device_data = calloc(1, sizeof(struct timespec));
 	struct timespec *ts = self->device_data;
+	if (!ts) {
+		log_error("Couldn't allocate device data: %s", strerror(errno));
+		return -1;
+	}
 	if (!self->params) {
 		log_error("No params object found.");
 		return -1;

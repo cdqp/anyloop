@@ -6,7 +6,14 @@ Anyloop uses a plugin-like syntax to add devices to a loop.
 Anatomy of a device
 -------------------
 
-See the `aylp_device` struct in `anyloop.h`.
+See the `aylp_device` struct in `anyloop.h`. Devices have init and close
+functions that each run once, and a process function that runs once every loop.
+Some ground rules:
+
+1. Devices are always expected to free any memory they allocated.
+2. Devices are to maintain copies of any memory they allocate. `state->matrix`
+(for example) should *never* be the only pointer to its data; otherwise, that's
+just begging for a memory leak.
 
 Built-in devices
 ----------------

@@ -22,6 +22,8 @@ struct aylp_vonkarman_stream_data {
 	gsl_rng *rng;
 	// matrix of the whole phase screen that we slide along
 	gsl_matrix *phase_screen;
+	// subview of phase screen
+	gsl_matrix_view sub_view;
 	// current row of 0,0 corner of window
 	size_t cur_y;
 	// current column of 0,0 corner of window

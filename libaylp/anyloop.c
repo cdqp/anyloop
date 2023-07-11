@@ -21,7 +21,9 @@ void _cleanup(void)
 	}
 	conf.n_devices = 0;
 	free(conf.devices); conf.devices = 0;
-	gsl_block_free(state.block);
+	// we actually *don't* want to free the state block/vector/matrix/bytes,
+	// because it will never be the only pointer to that data, and will have
+	// been freed by whatever device really owns that data.
 }
 
 
@@ -80,13 +82,20 @@ int main(int argc, char *argv[])
 
 	// typecheck the device pipeline
 	enum aylp_type type_cur;
-	// first device must be compatible with T_NONE and output of last device
-	type_cur = AYLP_T_NONE | conf.devices[conf.n_devices-1].type_out;
+	// first device must be compatible with _NONE and output of last device
+	type_cur = AYLP_T_NONE | AYLP_U_NONE
+		| conf.devices[conf.n_devices-1].type_out;
 	for (size_t idx=0; idx<conf.n_devices; idx++) {
-		if (!(conf.devices[idx].type_in & type_cur)) {
-			log_fatal("Device %s with input type %X "
-				"is incompatible with previous device of "
-				"output type %X", conf.devices[idx].uri,
+		log_trace("typechecking: prev=0x%hX, in=0x%hX, out=0x%hX",
+			type_cur,
+			conf.devices[idx].type_in, conf.devices[idx].type_out
+		);
+		if (!(0xFF00 & conf.devices[idx].type_in & type_cur)
+		|| !(0x00FF & conf.devices[idx].type_in & type_cur)
+		) {
+			log_fatal("Device %s with input type/units 0x%hX "
+				"is incompatible with previous t/u 0x%hX",
+				conf.devices[idx].uri,
 				conf.devices[idx].type_in, type_cur
 			);
 			return 1;

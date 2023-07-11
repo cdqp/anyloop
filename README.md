@@ -8,6 +8,8 @@ supporting adaptive optics applications.
 TODO
 ----
 
+- add function to simplify json parsing
+- add function to simplify device data allocation
 - doxygen
 - unit tests
 - actual physical dm control

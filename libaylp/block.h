@@ -12,5 +12,8 @@ gsl_block *mat2blk(gsl_matrix *m);
 // write vector to continuous block
 gsl_block *vec2blk(gsl_vector *v);
 
+// get contiguous gsl_blocK_uchar from state
+int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state);
+
 #endif
 

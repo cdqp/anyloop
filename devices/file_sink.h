@@ -1,10 +1,15 @@
 #ifndef _AYLP_FILE_SINK_H
 #define _AYLP_FILE_SINK_H
 
+#include <stdio.h>
+
 #include "anyloop.h"
 
 struct aylp_file_sink_data {
-	char *filename;
+	// file to sink data to
+	FILE *fp;
+	// gsl_block_uchar that we will copy pointer to data to
+	gsl_block_uchar bytes;
 };
 
 // initialize file sink device

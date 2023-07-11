@@ -158,6 +158,10 @@ int vonkarman_stream_init(struct aylp_device *self)
 		1, sizeof(struct aylp_vonkarman_stream_data)
 	);
 	struct aylp_vonkarman_stream_data *data = self->device_data;
+	if (!data) {
+		log_error("Couldn't allocate device data: %s", strerror(errno));
+		return -1;
+	}
 
 	// some default params
 	data->win_width = 10;
@@ -265,7 +269,7 @@ int vonkarman_stream_init(struct aylp_device *self)
 
 	// set types
 	self->type_in = AYLP_T_ANY | AYLP_U_ANY;
-	self->type_out = AYLP_T_BLOCK | AYLP_U_RAD;	// TODO: matrix?
+	self->type_out = AYLP_T_MATRIX | AYLP_U_RAD;
 
 	return 0;
 }
@@ -292,18 +296,15 @@ int vonkarman_stream_process(struct aylp_device *self, struct aylp_state *state)
 	data->cur_y += data->cur_step_y;
 	data->cur_x += data->cur_step_x;
 	log_trace("Window at y,x indices %lu,%lu", data->cur_y, data->cur_x);
-	gsl_matrix_view sub_view = gsl_matrix_submatrix(
+	data->sub_view = gsl_matrix_submatrix(
 		data->phase_screen,
 		data->cur_y, data->cur_x,
 		data->win_height, data->win_width
 	);
-	// it's possible that there's a faster way of doing this than the memcpy
-	// that mat2blk requires---we'd need to somehow present a block view of
-	// the submatrix, and make sure that downstream devices are compatible
-	// with this kind of view. TODO: look into this.
-	state->block = mat2blk(&sub_view.matrix);
+	// zero-copy update of pipeline state :)
+	state->matrix = &data->sub_view.matrix;
 	// housekeeping on the info struct
-	state->header.type = AYLP_T_BLOCK | AYLP_U_RAD;
+	state->header.type = AYLP_T_MATRIX | AYLP_U_RAD;
 	state->header.log_dim.y = data->win_height;
 	state->header.log_dim.x = data->win_width;
 	state->header.pitch.y = data->pitch;
@@ -319,6 +320,7 @@ int vonkarman_stream_close(struct aylp_device *self)
 	}
 	free(self->params); self->params = 0;
 	struct aylp_vonkarman_stream_data *data = self->device_data;
+	gsl_rng_free(data->rng); data->rng = 0;
 	gsl_matrix_free(data->phase_screen); data->phase_screen = 0;
 	free(data); self->device_data = 0;
 	return 0;

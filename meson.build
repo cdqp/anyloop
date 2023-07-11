@@ -19,6 +19,7 @@ project_source_files = [
 	'devices/delay.c',
 	'devices/file_sink.c',
 	'devices/logger.c',
+	'devices/stop_after_count.c',
 	'devices/udp_sink.c',
 	'devices/vonkarman_stream.c',
 ]

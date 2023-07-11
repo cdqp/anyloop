@@ -42,25 +42,27 @@ enum aylp_type:uint16_t {
 enum aylp_type {
 #endif
 	/** Indicates that there is no data in the pipeline yet. */
-	AYLP_T_NONE	= 1 << 0,
+	AYLP_U_NONE	= 1 << 0,
+	/** Signals that the units are in radians. */
+	AYLP_U_RAD	= 1 << 1,
+	/** Signals that the units are in [-1,+1]. */
+	AYLP_U_MINMAX	= 1 << 2,
+	/** Used to signal compatibility with any units. */
+	AYLP_U_ANY	= 0x00FF,
+	/** Indicates that there is no data in the pipeline yet. */
+	AYLP_T_NONE	= 1 << 8,
 	/** For gsl_block. */
-	AYLP_T_BLOCK	= 1 << 1,
+	AYLP_T_BLOCK	= 1 << 9,
 	/** For gsl_vector. */
-	AYLP_T_VECTOR	= 1 << 2,
+	AYLP_T_VECTOR	= 1 << 10,
 	/** For gsl_matrix. */
-	AYLP_T_MATRIX	= 1 << 3,
+	AYLP_T_MATRIX	= 1 << 11,
 	/** For gsl_block_uchar. */
-	AYLP_T_BYTES	= 1 << 4,
+	AYLP_T_BYTES	= 1 << 12,
 	/** Used to signal compatibility with any (gsl) type.
 	* Devices must also set AYLP_U_ANY to be compatible with any aylp_type.
 	*/
-	AYLP_T_ANY	= 0x00FF,
-	/** Signals that the units are in radians. */
-	AYLP_U_RAD	= 1 << 8,
-	/** Signals that the units are in [-1,+1]. */
-	AYLP_U_MINMAX	= 1 << 9,
-	/** Used to signal compatibility with any units. */
-	AYLP_U_ANY	= 0xFF00,
+	AYLP_T_ANY	= 0xFF00,
 	// add more as necessary
 };
 
@@ -153,11 +155,12 @@ struct aylp_device {
 	char *uri;
 
 	/** Input and output types/units accepted and produced by the device.
-	* Each device's input type must logical-and to a nonzero value with the
-	* last non-null output type before it in the pipeline. If a device comes
-	* first in the pipeline, and it has an input type other than
-	* AYLP_T_ANY|AYLP_U_ANY, it must be compatible with the output type of
-	* the last device in the pipeline as well as AYLP_T_NONE.
+	* Each device's input type and units must independently logical-and to a
+	* nonzero value with the last non-null output type before it in the
+	* pipeline. If a device comes first in the pipeline, and it has an input
+	* type or units other than AYLP_T_ANY or AYLP_U_ANY, it must be
+	* compatible with the output type and units of the last device in the
+	* pipeline as well as AYLP_T_NONE|AYLP_U_NONE.
 	*/
 	enum aylp_type type_in;
 	enum aylp_type type_out;

@@ -35,6 +35,12 @@
 			}
 		},
 		{
+			"uri": "anyloop:stop_after_count",
+			"params": {
+				"count": "4"
+			}
+		},
+		{
 			"uri": "anyloop:delay",
 			"params": {
 				"s": "0",
