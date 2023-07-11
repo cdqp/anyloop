@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <string.h>
 #include <gsl/gsl_block.h>
 #include <gsl/gsl_matrix.h>
@@ -93,7 +94,8 @@ int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 		bytes = state->bytes;
 		return 0;
 	default:
-		log_error("Bug: unsupported type 0x%hX", state->header.type);
+		log_fatal("Bug: unsupported type 0x%hX", state->header.type);
+		exit(EXIT_FAILURE);
 		return -1;
 	}
 }

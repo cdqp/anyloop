@@ -48,29 +48,19 @@ static double karman_spec(double L0, double r0, double Gx, double Gy,
  */
 static void backward_fft(double data[], size_t stride, size_t n)
 {
-	int err;
-	// check if size is power of 2
-	//if (!(n & (n-1))) {
-	// just kidding, do NOT do this; the radix2 function expects the real
-	// and imaginary parts to be far away from one another; if you uncomment
-	// the above power-of-2 check, make sure to shift things around or
-	// something (seems not worth it)
-	if (0) {
-		err = gsl_fft_halfcomplex_radix2_backward(data, stride, n);
-	} else {
-		gsl_fft_halfcomplex_wavetable *wt =
-			gsl_fft_halfcomplex_wavetable_alloc(n);
-		gsl_fft_real_workspace *ws = gsl_fft_real_workspace_alloc(n);
-		// this function is not actually mentioned in the docs, but it's
-		// in gsl_fft_halfcomplex.h in the sources, and presumably works
-		// the same way as gsl_fft_halfcomplex_transform() (which *is*
-		// documented), but with the sign change in the exponent
-		err = gsl_fft_halfcomplex_backward(data, stride, n, wt, ws);
-		gsl_fft_halfcomplex_wavetable_free(wt);
-		gsl_fft_real_workspace_free(ws);
-	}
+	gsl_fft_halfcomplex_wavetable *wt =
+		gsl_fft_halfcomplex_wavetable_alloc(n);
+	gsl_fft_real_workspace *ws = gsl_fft_real_workspace_alloc(n);
+	// this function is not actually mentioned in the docs, but it's
+	// in gsl_fft_halfcomplex.h in the sources, and presumably works
+	// the same way as gsl_fft_halfcomplex_transform() (which *is*
+	// documented), but with the sign change in the exponent
+	int err = gsl_fft_halfcomplex_backward(data, stride, n, wt, ws);
+	gsl_fft_halfcomplex_wavetable_free(wt);
+	gsl_fft_real_workspace_free(ws);
 	if (err) {
 		log_error("Backward fft failed, gsl_errno=%d\n", err);
+		exit(EXIT_FAILURE);
 	}
 	return;
 }
