@@ -8,12 +8,13 @@ supporting adaptive optics applications.
 TODO
 ----
 
-- add function to simplify json parsing
-- add function to simplify device data allocation
+- add function to simplify device data allocation?
 - doxygen
 - unit tests
 - actual physical dm control
 - actual physical wfs control
-- 2d resampling
+- device to generate poke matrix and reconstructor
+- device to apply a reconstructor
+- try -fprofile-generate and -fprofile-use
 - ... and much more
 

@@ -176,50 +176,34 @@ int vonkarman_stream_init(struct aylp_device *self)
 		if (key[0] == '_') {
 			// keys starting with _ are comments
 		} else if (!strcmp(key, "L0")) {
-			data->L0 = strtod(json_object_get_string(val), 0);
+			data->L0 = json_object_get_double(val);
 			log_trace("L0 = %E", data->L0);
 		} else if (!strcmp(key, "r0")) {
-			data->r0 = strtod(json_object_get_string(val), 0);
+			data->r0 = json_object_get_double(val);
 			log_trace("r0 = %E", data->r0);
 		} else if (!strcmp(key, "pitch")) {
-			data->pitch = strtod(json_object_get_string(val), 0);
+			data->pitch = json_object_get_double(val);
 			log_trace("pitch = %E", data->pitch);
 		} else if (!strcmp(key, "screen_size")) {
-			data->screen_size= (size_t) strtoumax(
-				json_object_get_string(val), 0, 0
-			);
+			data->screen_size = json_object_get_uint64(val);
 			log_trace("screen_size = %u", data->screen_size);
 		} else if (!strcmp(key, "start_y")) {
-			data->cur_y= (size_t) strtoumax(
-				json_object_get_string(val), 0, 0
-			);
+			data->cur_y = json_object_get_uint64(val);
 			log_trace("start_y = %u", data->cur_y);
 		} else if (!strcmp(key, "win_height")) {
-			data->win_height = (size_t) strtoumax(
-				json_object_get_string(val), 0, 0
-			);
+			data->win_height = json_object_get_uint64(val);
 			log_trace("win_height = %u", data->win_height);
 		} else if (!strcmp(key, "win_width")) {
-			data->win_height = (size_t) strtoumax(
-				json_object_get_string(val), 0, 0
-			);
+			data->win_width = json_object_get_uint64(val);
 			log_trace("win_width = %u", data->win_width);
 		} else if (!strcmp(key, "start_x")) {
-			data->cur_x = (size_t) strtoumax(
-				json_object_get_string(val), 0, 0
-			);
+			data->cur_x = json_object_get_uint64(val);
 			log_trace("start_x = %u", data->cur_x);
 		} else if (!strcmp(key, "step_y")) {
-			// no strtoi in stdlib and atoi is insecure
-			data->cur_step_y = (int)strtod(
-				json_object_get_string(val), 0
-			);
-			// that'll do ;)
+			data->cur_step_y = json_object_get_int(val);
 			log_trace("step_y = %u", data->cur_step_y);
 		} else if (!strcmp(key, "step_x")) {
-			data->cur_step_x = (int)strtod(
-				json_object_get_string(val), 0
-			);
+			data->cur_step_x = json_object_get_int(val);
 			log_trace("step_x = %u", data->cur_step_x);
 		} else {
 			log_warn("Unknown parameter \"%s\"", key);

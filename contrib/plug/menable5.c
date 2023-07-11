@@ -34,19 +34,13 @@ int menable5_init(struct aylp_device *self)
 		if (key[0] == '_') {
 			// keys starting with _ are comments
 		} else if (!strcmp(key, "width")) {
-			data->width = (size_t)strtoumax(
-				json_object_get_string(val), 0, 0
-			);
+			data->width = json_object_get_uint64(val);
 			log_trace("width = %E", data->width);
 		} else if (!strcmp(key, "height")) {
-			data->height = (size_t)strtoumax(
-				json_object_get_string(val), 0, 0
-			);
+			data->height = json_object_get_uint64(val);
 			log_trace("height = %E", data->height);
 		} else if (!strcmp(key, "bytes_per_px")) {
-			data->bytes_per_px = (size_t)strtoumax(
-				json_object_get_string(val), 0, 0
-			);
+			data->bytes_per_px = json_object_get_uint64(val);
 			log_trace("bytes_per_px = %E", data->bytes_per_px);
 		} else {
 			log_warn("Unknown parameter \"%s\"", key);
