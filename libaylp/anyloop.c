@@ -5,7 +5,7 @@
 #include "anyloop.h"
 #include "logging.h"
 #include "config.h"
-#include "device.h"
+#include "../devices/device.h"
 
 struct aylp_state state = {0};
 struct aylp_conf conf;
