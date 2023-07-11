@@ -40,6 +40,9 @@ void handle_signal(int sig)
 
 int main(int argc, char *argv[])
 {
+	// TODO: in addition to config file, parse a log level param
+	// (probably want getopt?)
+	log_init(LOG_TRACE);
 	if (signal(SIGINT, handle_signal) == SIG_ERR) {
 		log_fatal("Failed to attach signal handler to SIGINT.");
 		return 1;
@@ -50,8 +53,6 @@ int main(int argc, char *argv[])
 	// allocate the block
 	state.block = gsl_block_alloc(0);
 
-	// TODO: in addition to config file, parse a log level param
-	// (probably want getopt?)
 	if (argc > 1) {
 		conf = read_config(argv[1]);
 	} else {
