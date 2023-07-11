@@ -2,6 +2,8 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <time.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <gsl/gsl_fft_halfcomplex.h>
 #include <gsl/gsl_fft_real.h>
 #include <gsl/gsl_math.h>
@@ -236,9 +238,31 @@ int vonkarman_stream_init(struct aylp_device *self)
 		data->cur_x = 0; data->cur_y = 0;
 	}
 
-	// set up the rng
+	// initialize the RNG with a seed from urandom
+	unsigned long rng_seed = 0;
+	int urandom = open("/dev/urandom", O_RDONLY);
+	if (urandom < 0) {
+		log_error("Failed to open /dev/urandom.");
+		return -1;
+	}
+
+	ssize_t read_len = 0;
+	while (read_len != sizeof(rng_seed)) {
+		read_len = read(urandom, &rng_seed, sizeof(rng_seed));
+		if (read_len < 0) {
+			log_error("Error occured while reading /dev/urandom for a seed: %s",
+				strerror(errno)
+			);
+			return -1;
+		}
+	}
+
+	close(urandom);
+
+	log_trace("RNG Seed: %lx", rng_seed);
+
 	data->rng = gsl_rng_alloc(gsl_rng_ranlxs2);
-	gsl_rng_set(data->rng, time(0));
+	gsl_rng_set(data->rng, rng_seed);
 
 	// make the phase screen
 	if (generate_phase_screen(self)) {
