@@ -81,27 +81,37 @@ int main(int argc, char *argv[])
 	}
 
 	// typecheck the device pipeline
-	enum aylp_type type_cur;
+	enum aylp_type type_cur = AYLP_T_NONE;
+	enum aylp_units units_cur = AYLP_U_NONE;
 	// first device must be compatible with _NONE and output of last device
-	type_cur = AYLP_T_NONE | AYLP_U_NONE
-		| conf.devices[conf.n_devices-1].type_out;
+	type_cur |= conf.devices[conf.n_devices-1].type_out;
+	units_cur |= conf.devices[conf.n_devices-1].units_out;
 	for (size_t idx=0; idx<conf.n_devices; idx++) {
-		log_trace("typechecking: prev=0x%hX, in=0x%hX, out=0x%hX",
-			type_cur,
-			conf.devices[idx].type_in, conf.devices[idx].type_out
+		struct aylp_device d = conf.devices[idx];	// brevity
+		log_trace("type check: prev=0x%hX, in=0x%hX, out=0x%hX",
+			type_cur, d.type_in, d.type_out
 		);
-		if (!(0xFF00 & conf.devices[idx].type_in & type_cur)
-		|| !(0x00FF & conf.devices[idx].type_in & type_cur)
-		) {
-			log_fatal("Device %s with input type/units 0x%hX "
-				"is incompatible with previous t/u 0x%hX",
-				conf.devices[idx].uri,
-				conf.devices[idx].type_in, type_cur
+		log_trace("unit check: prev=0x%hX, in=0x%hX, out=0x%hX",
+			units_cur, d.units_in, d.units_out
+		);
+		if (!(d.type_in & type_cur)) {
+			log_fatal("Device %s with input type 0x%hX "
+				"is incompatible with previous type 0x%hX",
+				d.uri, d.type_in, type_cur
 			);
 			return 1;
 		}
-		if (conf.devices[idx].type_out)
-			type_cur = conf.devices[idx].type_out;
+		if (!(d.units_in & units_cur)) {
+			log_fatal("Device %s with input units 0x%hX "
+				"is incompatible with previous units 0x%hX",
+				d.uri, d.units_in, units_cur
+			);
+			return 1;
+		}
+		if (d.type_out)
+			type_cur = d.type_out;
+		if (d.units_out)
+			units_cur = d.units_out;
 	}
 
 	while (state.header.status ^ AYLP_DONE) {

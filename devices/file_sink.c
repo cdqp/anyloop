@@ -44,9 +44,11 @@ int file_sink_init(struct aylp_device *self)
 		log_error("Couldn't open file: %s", strerror(errno));
 		return -1;
 	}
-	// set type
-	self->type_in = AYLP_T_ANY | AYLP_U_ANY;
+	// set types and units
+	self->type_in = AYLP_T_ANY;
+	self->units_in = AYLP_U_ANY;
 	self->type_out = 0;
+	self->units_out = 0;
 	return 0;
 }
 

@@ -267,9 +267,11 @@ int vonkarman_stream_init(struct aylp_device *self)
 		return -1;
 	}
 
-	// set types
-	self->type_in = AYLP_T_ANY | AYLP_U_ANY;
-	self->type_out = AYLP_T_MATRIX | AYLP_U_RAD;
+	// set types and units
+	self->type_in = AYLP_T_ANY;
+	self->units_in = AYLP_U_ANY;
+	self->type_out = AYLP_T_ANY;
+	self->units_out = AYLP_U_RAD;
 
 	return 0;
 }
@@ -303,8 +305,9 @@ int vonkarman_stream_process(struct aylp_device *self, struct aylp_state *state)
 	);
 	// zero-copy update of pipeline state :)
 	state->matrix = &data->sub_view.matrix;
-	// housekeeping on the info struct
-	state->header.type = AYLP_T_MATRIX | AYLP_U_RAD;
+	// housekeeping on the header
+	state->header.type = AYLP_T_MATRIX;
+	state->header.units = AYLP_U_RAD;
 	state->header.log_dim.y = data->win_height;
 	state->header.log_dim.x = data->win_width;
 	state->header.pitch.y = data->pitch;

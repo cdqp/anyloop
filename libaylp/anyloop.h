@@ -30,43 +30,6 @@ _Static_assert(sizeof(size_t) == 8, "we need size_t to be 64-bit for gsl");
 #define UNLIKELY(x)	__builtin_expect((x),0)
 
 
-/** Enum for type of data in aylp_state.
- * The least significant byte is the block type, and the most significant byte
- * is info on the units of the data. Devices must specify their input and output
- * types after they are initialized. Null is a special type that means
- * "unaltered" when set as a device output.
- */
-#if __STDC_VERSION__ > 201710L	// check for support of specifying enum type
-enum aylp_type:uint16_t {
-#else
-enum aylp_type {
-#endif
-	/** Indicates that there is no data in the pipeline yet. */
-	AYLP_U_NONE	= 1 << 0,
-	/** Signals that the units are in radians. */
-	AYLP_U_RAD	= 1 << 1,
-	/** Signals that the units are in [-1,+1]. */
-	AYLP_U_MINMAX	= 1 << 2,
-	/** Used to signal compatibility with any units. */
-	AYLP_U_ANY	= 0x00FF,
-	/** Indicates that there is no data in the pipeline yet. */
-	AYLP_T_NONE	= 1 << 8,
-	/** For gsl_block. */
-	AYLP_T_BLOCK	= 1 << 9,
-	/** For gsl_vector. */
-	AYLP_T_VECTOR	= 1 << 10,
-	/** For gsl_matrix. */
-	AYLP_T_MATRIX	= 1 << 11,
-	/** For gsl_block_uchar. */
-	AYLP_T_BYTES	= 1 << 12,
-	/** Used to signal compatibility with any (gsl) type.
-	* Devices must also set AYLP_U_ANY to be compatible with any aylp_type.
-	*/
-	AYLP_T_ANY	= 0xFF00,
-	// add more as necessary
-};
-
-
 /** Flags pertaining to loop status. */
 #if __STDC_VERSION__ > 201710L
 enum aylp_status:uint16_t {
@@ -75,6 +38,54 @@ enum aylp_status {
 #endif
 	/** Signals that we are done with the loop. */
 	AYLP_DONE	= 1 << 0,
+	// add more as necessary
+};
+
+
+/** Enum for type of data in aylp_state.
+ * Devices must specify their input and output types after they are initialized.
+ * Null is a special type that means "unaltered" when set as a device output.
+ */
+#if __STDC_VERSION__ > 201710L	// check for support of specifying enum type
+enum aylp_type:uint8_t {
+#else
+enum aylp_type {
+#endif
+	/** Indicates that there is no data in the pipeline yet. */
+	AYLP_T_NONE	= 1 << 0,
+	/** For gsl_block. */
+	AYLP_T_BLOCK	= 1 << 1,
+	/** For gsl_vector. */
+	AYLP_T_VECTOR	= 1 << 2,
+	/** For gsl_matrix. */
+	AYLP_T_MATRIX	= 1 << 3,
+	/** For gsl_block_uchar. */
+	AYLP_T_BYTES	= 1 << 4,
+	/** Used to signal compatibility with any (gsl) type.
+	* Devices must also set AYLP_U_ANY to be compatible with any aylp_type.
+	*/
+	AYLP_T_ANY	= 0xFF,
+	// add more as necessary
+};
+
+
+/** Enum for type of data in aylp_state.
+ * Devices must specify their input and output types after they are initialized.
+ * Null is a special type that means "unaltered" when set as a device output.
+ */
+#if __STDC_VERSION__ > 201710L	// check for support of specifying enum type
+enum aylp_units:uint8_t {
+#else
+enum aylp_units {
+#endif
+	/** Indicates that there is no data in the pipeline yet. */
+	AYLP_U_NONE	= 1 << 0,
+	/** Signals that the units are in radians. */
+	AYLP_U_RAD	= 1 << 1,
+	/** Signals that the units are in [-1,+1]. */
+	AYLP_U_MINMAX	= 1 << 2,
+	/** Used to signal compatibility with any units. */
+	AYLP_U_ANY	= 0xFF,
 	// add more as necessary
 };
 
@@ -95,7 +106,8 @@ struct aylp_header {
 	/** Status flags and type of data. */
 	#if __STDC_VERSION__ > 201710L
 	enum aylp_status status;	// uint16_t
-	enum aylp_type type;		// uint16_t
+	enum aylp_type type;		// uint8_t
+	enum aylp_units units;		// uint8_t
 	#else
 	uint16_t status;
 	uint16_t type;
@@ -163,7 +175,9 @@ struct aylp_device {
 	* pipeline as well as AYLP_T_NONE|AYLP_U_NONE.
 	*/
 	enum aylp_type type_in;
+	enum aylp_units units_in;
 	enum aylp_type type_out;
+	enum aylp_units units_out;
 
 	/** Device parameters.
 	* This is taken directly from the json configuration file. For example,

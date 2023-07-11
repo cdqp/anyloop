@@ -25,9 +25,11 @@ int plugin_example_init(struct aylp_device *self)
 {
 	self->process = &plugin_example_process;
 	self->close = &plugin_example_close;
-	// set types
-	self->type_in = AYLP_T_ANY | AYLP_U_ANY;
+	// set types and units
+	self->type_in = AYLP_T_ANY;
+	self->units_in = AYLP_U_ANY;
 	self->type_out = 0;
+	self->units_out = 0;
 	return 0;
 }
 

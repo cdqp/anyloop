@@ -48,7 +48,7 @@ gsl_block *vec2blk(gsl_vector *v)
  */
 int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 {
-	switch (AYLP_T_ANY & state->header.type) {
+	switch (state->header.type) {
 	case AYLP_T_BLOCK:
 		bytes->size = sizeof(double) * state->block->size;
 		bytes->data = (unsigned char *)state->block->data;
