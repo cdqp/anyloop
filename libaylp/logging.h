@@ -18,6 +18,8 @@ enum { LOG_TRACE, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_FATAL };
 #define log_fatal(...) log_impl(LOG_FATAL, __FILE__, __LINE__, __VA_ARGS__)
 
 void log_init(int level);
+// returns true on success, false otherwise
+bool log_set_level_by_name(char *level_name);
 int log_get_level(void);
 void log_impl(int level, const char *file, int line, const char *fmt, ...);
 

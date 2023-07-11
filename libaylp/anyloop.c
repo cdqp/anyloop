@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <gsl/gsl_block.h>
+#include <stdlib.h>
 #include "anyloop.h"
 #include "logging.h"
 #include "config.h"
@@ -38,27 +39,50 @@ void handle_signal(int sig)
 }
 
 
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 {
-	// TODO: in addition to config file, parse a log level param
-	// (probably want getopt?)
-	log_init(LOG_TRACE);
-	if (signal(SIGINT, handle_signal) == SIG_ERR) {
-		log_fatal("Failed to attach signal handler to SIGINT.");
-		return 1;
-	}
+	UNUSED(argc);
+
+	log_init(LOG_INFO);
 
 	// copy magic number to header
 	state.header.magic = AYLP_MAGIC;
 	// allocate the block
 	state.block = gsl_block_alloc(0);
 
-	if (argc > 1) {
-		conf = read_config(argv[1]);
+	// parse options
+	for (argv++; argv; argv++) {
+		char *arg = *argv;
+		if (arg[0] != '-' || strcmp(arg, "--") == 0)
+			break;
+
+		if (strcmp(arg, "-loglevel") == 0) {
+			argv++;
+			if (*argv) {
+				if (!log_set_level_by_name(*argv))
+				return EXIT_FAILURE;
+			} else {
+				log_fatal("Expected an argument to -loglevel");
+				return EXIT_FAILURE;
+			}
+		} else {
+			log_fatal("Unknown option %s", arg);
+			return EXIT_FAILURE;
+		}
+	}
+
+	// parse filename
+	if (argv) {
+		conf = read_config(*argv);
 	} else {
-		log_info("Usage: `anyloop path_to_conf.json`");
+		log_info("Usage: `anyloop [-loglevel LOG_LEVEL] [--] path_to_conf.json`");
 		log_fatal("Please provide a config file.");
-		return 1;
+		return EXIT_FAILURE;
+	}
+
+	if (signal(SIGINT, handle_signal) == SIG_ERR) {
+		log_fatal("Failed to attach signal handler to SIGINT.");
+		return EXIT_FAILURE;
 	}
 
 	// initialize all devices
@@ -68,14 +92,14 @@ int main(int argc, char *argv[])
 			log_info("(note that comments are not allowed as top-"
 				"level entries in the pipeline array)"
 			);
-			return 1;
+			return EXIT_FAILURE;
 		}
 		if (init_device(&conf.devices[idx])) {
 			log_fatal("Could not initialize %s.",
 				conf.devices[idx].uri
 			);
 			cleanup();
-			return 1;
+			return EXIT_FAILURE;
 		} else {
 			log_info("Initialized %s.", conf.devices[idx].uri);
 		}
@@ -100,14 +124,14 @@ int main(int argc, char *argv[])
 				"is incompatible with previous type 0x%hX",
 				d.uri, d.type_in, type_cur
 			);
-			return 1;
+			return EXIT_FAILURE;
 		}
 		if (!(d.units_in & units_cur)) {
 			log_fatal("Device %s with input units 0x%hX "
 				"is incompatible with previous units 0x%hX",
 				d.uri, d.units_in, units_cur
 			);
-			return 1;
+			return EXIT_FAILURE;
 		}
 		if (d.type_out)
 			type_cur = d.type_out;
@@ -133,6 +157,6 @@ int main(int argc, char *argv[])
 	log_info("AYLP_DONE was set; cleaning up");
 	cleanup();
 	log_info("Exiting now!");
-	return 0;
+	return EXIT_SUCCESS;
 }
 

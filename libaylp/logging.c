@@ -36,6 +36,24 @@ void log_init(int level)
 	log_status.use_color = isatty(STDERR_FILENO);
 }
 
+bool log_set_level_by_name(char *level_name)
+{
+	const size_t num_levels = sizeof(level_strings)/sizeof(*level_strings);
+	for (size_t i=0; i<num_levels; i++) {
+		if (strcmp(level_name, level_strings[i]) == 0) {
+			log_status.level = i;
+			return true;
+		}
+
+	}
+
+	log_fatal("Log level must be one of the following values:");
+	for (size_t i=0; i<num_levels; i++) {
+		log_fatal(" - %s", level_strings[i]);
+	}
+	return false;
+}
+
 int log_get_level(void)
 {
 	return log_status.level;
