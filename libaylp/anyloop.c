@@ -9,6 +9,7 @@
 #include "logging.h"
 #include "config.h"
 #include "xalloc.h"
+#include "profile.h"
 #include "../devices/device.h"
 
 const char *help_msg = "\nUsage: `anyloop [options] your_config_file.json`\n"
@@ -86,6 +87,7 @@ static bool check_opt(char **arg, char opt_short, char *opt_long,
 
 int main(int argc, char **argv)
 {
+	bool profile_mode = false;
 	int err;
 	// initialize logger with default level
 	log_init(LOG_INFO);
@@ -98,6 +100,7 @@ int main(int argc, char **argv)
 		log_info(help_msg);
 		return EXIT_SUCCESS;
 	}
+
 	// parse all but last argument
 	for (int i = 1; i < argc-1; i++) {
 		// if arg is null, it was handled already; keep going
@@ -120,8 +123,7 @@ int main(int argc, char **argv)
 				return EXIT_FAILURE;
 		}
 		if (check_opt(argv+i, 'p', "profile", 0, &remain)) {
-			log_warn("-p/--profile not yet implemented.");
-			// TODO: @wooosh
+			profile_mode = true;
 		}
 		// add more check_opt calls for new options
 
@@ -207,11 +209,20 @@ int main(int argc, char **argv)
 			units_cur = d.units_out;
 	}
 
+	struct profile profile = {0};
+	if (profile_mode)
+		profile = profile_new(&conf);
+
 	while (!sigint_received && state.header.status ^ AYLP_DONE) {
 		for (size_t d=0; !sigint_received && d<conf.n_devices; d++) {
 			struct aylp_device *dev = &conf.devices[d];
 			if (dev->process) {
+				if (profile_mode)
+					profile_begin_for_device(&profile, d);
 				err = dev->process(dev, &state);
+				if (profile_mode)
+					profile_end_for_device(&profile, d);
+
 				// errors are assumed recoverable (e.g. UDP
 				// fails to send) unless the device was supposed
 				// to change the type
@@ -239,6 +250,12 @@ int main(int argc, char **argv)
 		log_info("Caught SIGINT; cleaning up");
 	else
 		log_info("AYLP_DONE was set; cleaning up");
+
+	if (profile_mode) {
+		profile_summary(&profile);
+		profile_free(&profile);
+	}
+
 	cleanup();
 	log_info("Exiting now!");
 	return EXIT_SUCCESS;

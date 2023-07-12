@@ -22,6 +22,7 @@ project_source_files = [
 	'libaylp/pretty.c',
 	'libaylp/thread_pool.c',
 	'libaylp/xalloc.c',
+	'libaylp/profile.c',
 	'devices/center_of_mass.c',
 	'devices/device.c',
 	'devices/delay.c',
