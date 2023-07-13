@@ -13,6 +13,8 @@
 
 // do we want to consider 10-bit packed? kinda doubt it'd be worth it.
 
+// max tries to get a frame
+static const size_t max_tries = 10000;
 
 int menable5_init(struct aylp_device *self)
 {
@@ -35,13 +37,13 @@ int menable5_init(struct aylp_device *self)
 			// keys starting with _ are comments
 		} else if (!strcmp(key, "width")) {
 			data->width = json_object_get_uint64(val);
-			log_trace("width = %E", data->width);
+			log_trace("width = %llu", data->width);
 		} else if (!strcmp(key, "height")) {
 			data->height = json_object_get_uint64(val);
-			log_trace("height = %E", data->height);
+			log_trace("height = %llu", data->height);
 		} else if (!strcmp(key, "bytes_per_px")) {
 			data->bytes_per_px = json_object_get_uint64(val);
-			log_trace("bytes_per_px = %E", data->bytes_per_px);
+			log_trace("bytes_per_px = %llu", data->bytes_per_px);
 		} else {
 			log_warn("Unknown parameter \"%s\"", key);
 		}
@@ -149,9 +151,8 @@ int menable5_process(struct aylp_device *self, struct aylp_state *state)
 		log_error("Unlock failed: %s\n", strerror(errno));
 		return err;
 	}
-	// only try 1k times to get a frame
 	size_t i;
-	for (i=0; i<1000; i++) {
+	for (i = 0; i < max_tries; i++) {
 		struct handshake_frame hand = {
 			.head = data->memory.headnr,
 			.mode = SEL_ACT_IMAGE
@@ -170,8 +171,8 @@ int menable5_process(struct aylp_device *self, struct aylp_state *state)
 			break;
 		}
 	}
-	if (UNLIKELY(i==1000)) {
-		log_error("Hit max tries for frame read");
+	if (UNLIKELY(i == max_tries)) {
+		log_error("Hit max tries (%llu) for frame read", max_tries);
 		return -1;
 	}
 	err = ioctl(data->fg, MEN_IOC(DMA_LENGTH,bufidx), &bufidx);

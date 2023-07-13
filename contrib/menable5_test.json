@@ -1,0 +1,26 @@
+{
+	"pipeline": [
+		{
+			"uri": "file:build/menable5.so",
+			"params": {
+				"width": 160,
+				"height": 160,
+				"bytes_per_px": 1
+			}
+		},
+		{
+			"uri": "anyloop:udp_sink",
+			"params": {
+				"ip": "127.0.0.1",
+				"port": 64730
+			}
+		},
+		{
+			"uri": "anyloop:stop_after_count",
+			"params": {
+				"count": 10
+			}
+		}
+	]
+}
+

@@ -18,10 +18,8 @@ int stop_after_count_init(struct aylp_device *self)
 		if (key[0] == '_') {
 			// keys starting with _ are comments
 		} else if (!strcmp(key, "count")) {
-			*count = strtoul(
-				json_object_get_string(val), 0, 0
-			);
-			log_trace("count = %llu", self->device_data);
+			*count = json_object_get_uint64(val);
+			log_trace("count = %llu", *count);
 		} else {
 			log_warn("Unknown parameter \"%s\"", key);
 		}
