@@ -92,6 +92,7 @@ int udp_sink_process(struct aylp_device *self, struct aylp_state *state)
 	data->iovecs[1].iov_len = data->bytes.size;
 	// write all the data in one go
 	size_t n = data->iovecs[0].iov_len + data->iovecs[1].iov_len;
+	log_trace("Writing %llu bytes to UDP", n);
 	ssize_t err = writev(data->sock, data->iovecs, 2);
 	if (err < 0) {
 		// if n > SSIZE_MAX, this will fire, so we don't need to check

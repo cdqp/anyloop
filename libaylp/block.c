@@ -54,11 +54,15 @@ int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 	case AYLP_T_BLOCK:
 		bytes->size = sizeof(double) * state->block->size;
 		bytes->data = (unsigned char *)state->block->data;
+		log_trace("got block of %llu doubles", bytes->size);
 		return 0;
 	case AYLP_T_VECTOR: {
 		gsl_vector *v = state->vector;	// brevity
 		bytes->size = sizeof(double) * v->size;
 		if (LIKELY(v->stride == 1)) {
+			log_trace("got contiguous vector of %llu doubles",
+				bytes->size
+			);
 			bytes->data = (unsigned char *)v->data;
 			return 0;
 		} else {
@@ -68,6 +72,9 @@ int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 					v->data[i * v->stride]
 				;
 			}
+			log_trace("got non-contiguous vector of %llu doubles",
+				bytes->size
+			);
 			return 1;
 		}
 	}
@@ -77,10 +84,16 @@ int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 		if (LIKELY(m->tda == m->size2)) {
 			// rows are contiguous
 			bytes->data = (unsigned char *)m->data;
+			log_trace("got contiguous matrix of %llu doubles",
+				bytes->size
+			);
 			return 0;
 		} else {
 			// rows are not contiguous
 			bytes->data = xmalloc(bytes->size);
+			log_trace("got non-contiguous matrix of %llu doubles",
+				bytes->size
+			);
 			for (size_t i = 0; i < m->size1; i++) {
 				memcpy(bytes->data + sizeof(double)*i*m->size2,
 					m->data + i*m->tda,
@@ -91,7 +104,9 @@ int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 		}
 	}
 	case AYLP_T_BYTES:
-		bytes = state->bytes;
+		bytes->size = state->bytes->size;
+		bytes->data = state->bytes->data;
+		log_trace("got block of %llu uchars", bytes->size);
 		return 0;
 	default:
 		log_fatal("Bug: unsupported type 0x%hX", state->header.type);

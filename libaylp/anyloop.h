@@ -75,6 +75,9 @@ enum {
 	AYLP_U_RAD	= 1 << 1,
 	/** Signals that the units are in [-1,+1]. */
 	AYLP_U_MINMAX	= 1 << 2,
+	/** Signals that the units are natural numbers.
+	* For example, pixel values. */
+	AYLP_U_COUNTS	= 1 << 3,
 	/** Used to signal compatibility with any units. */
 	AYLP_U_ANY	= 0xFF,
 	// add more as necessary

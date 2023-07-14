@@ -34,18 +34,7 @@ executable('anyloop', project_source_files,
 	export_dynamic: true
 )
 
-shared_library('plugin_example',
-	['contrib/plug/plugin_example.c'],
-	name_prefix: '',
-	install: true,
-	dependencies: deps,
-	install_dir: 'plugins',
-	include_directories: incdir,
-	override_options: 'b_lundef=false'
-)
-
-shared_library('menable5',
-	['contrib/plug/menable5.c'],
+shared_library('plugin_example', 'contrib/plugin_example.c',
 	name_prefix: '',
 	install: true,
 	dependencies: deps,

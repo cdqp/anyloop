@@ -1,11 +1,11 @@
 #!/usr/bin/julia
-# just a rudimentary plotting script to watch AYLPDATA files from udp
+# just a plotting script to watch AYLP files from udp
 using ArgParse
 using Plots; gr()
 using Sockets
 
 struct AYLP_Header
-    magic::Vector{Char}
+    magic::Vector{UInt8}
     aylp_status::UInt16
     aylp_type::UInt8
     aylp_units::UInt8
@@ -17,13 +17,19 @@ end
 
 struct AYLP_Data
     head::AYLP_Header
-    data::Vector{Float64}
+    data::Union{
+        Matrix{Float64},    # for gsl_block, gsl_vector, or gsl_matrix
+        Matrix{UInt8},      # for gsl_block_uchar
+    }
 end
 
+# TODO: optimize read() to be faster
+
 function Base.read(io::IO, ::Type{AYLP_Header})
-    magic = Vector{Char}(undef, 4)
+    magic = Vector{UInt8}(undef, 4)
+    println("magic is $(sizeof(magic))")
     for i in 1:4
-        magic[i] = read(io, Char)
+        magic[i] = read(io, UInt8)
     end
     @assert String(magic) == "AYLP";
     aylp_status = read(io, UInt16)
@@ -42,11 +48,24 @@ end
 function Base.read(io::IO, ::Type{AYLP_Data})
     head = read(io, AYLP_Header)
     size = head.log_dim_y * head.log_dim_x
-    data = Vector{Float64}(undef, size)
-    for i in 1:size
-        data[i] = read(io, Float64)
+    println(sizeof(head))
+    if head.aylp_type in [1<<1, 1<<2, 1<<3]
+        # block/vector/matrix
+        data = Vector{Float64}(undef, size)
+        for i in 1:size
+            data[i] = read(io, Float64)
+        end
+        return AYLP_Data(head, reshape(data, (head.log_dim_y, head.log_dim_x)))
+    elseif head.aylp_type == 1<<4
+        # block_uchar
+        data = Vector{UInt8}(undef, size)
+        for i in 1:size
+            data[i] = read(io, UInt8)
+        end
+        return AYLP_Data(head, reshape(data, (head.log_dim_y, head.log_dim_x)))
+    else
+        throw(ArgumentError("unknown type $(head.aylp_type)"))
     end
-    return AYLP_Data(head, data)
 end
 
 argset = ArgParseSettings()
@@ -65,12 +84,10 @@ end
 
 println("listening on $(args["port"]) ...")
 
-for i in 1:50
+for i in 1:100
     recvbytes = IOBuffer(recv(sock))
     data = read(recvbytes, AYLP_Data)
-    show(data)
-    p = heatmap(reshape(data.data, (data.head.log_dim_y, data.head.log_dim_x)))
-    display(p)
+    display(heatmap(data.data))
 end
 
 close(sock)
