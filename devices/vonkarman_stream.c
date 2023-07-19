@@ -48,16 +48,19 @@ static double karman_spec(double L0, double r0, double Gx, double Gy,
  */
 static void backward_fft(double data[], size_t stride, size_t n)
 {
-	gsl_fft_halfcomplex_wavetable *wt =
-		gsl_fft_halfcomplex_wavetable_alloc(n);
-	gsl_fft_real_workspace *ws = gsl_fft_real_workspace_alloc(n);
+	gsl_fft_halfcomplex_wavetable *wt = xmalloc_type(
+		gsl_fft_halfcomplex_wavetable, n
+	);
+	gsl_fft_real_workspace *ws = xmalloc_type(
+		gsl_fft_real_workspace, n
+	);
 	// this function is not actually mentioned in the docs, but it's
 	// in gsl_fft_halfcomplex.h in the sources, and presumably works
 	// the same way as gsl_fft_halfcomplex_transform() (which *is*
 	// documented), but with the sign change in the exponent
 	int err = gsl_fft_halfcomplex_backward(data, stride, n, wt, ws);
-	gsl_fft_halfcomplex_wavetable_free(wt);
-	gsl_fft_real_workspace_free(ws);
+	xfree_type(gsl_fft_halfcomplex_wavetable, wt);
+	xfree_type(gsl_fft_real_workspace, ws);
 	if (err) {
 		log_error("Backward fft failed, gsl_errno=%d\n", err);
 		exit(EXIT_FAILURE);
@@ -254,7 +257,7 @@ int vonkarman_stream_init(struct aylp_device *self)
 
 	log_trace("RNG Seed: %lx", rng_seed);
 
-	data->rng = gsl_rng_alloc(gsl_rng_ranlxs2);
+	data->rng = xmalloc_type(gsl_rng, gsl_rng_ranlxs2);
 	gsl_rng_set(data->rng, rng_seed);
 
 	// make the phase screen
@@ -319,8 +322,8 @@ int vonkarman_stream_close(struct aylp_device *self)
 	}
 	xfree(self->params);
 	struct aylp_vonkarman_stream_data *data = self->device_data;
-	gsl_rng_free(data->rng); data->rng = 0;
-	gsl_matrix_free(data->phase_screen); data->phase_screen = 0;
+	xfree_type(gsl_rng, data->rng);
+	xfree_type(gsl_matrix, data->phase_screen);
 	xfree(self->device_data);
 	return 0;
 }

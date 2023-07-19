@@ -11,11 +11,13 @@ gsl_dep = dependency('gsl')
 deps = [json_dep, gsl_dep]
 
 project_source_files = [
+	'libaylp/anyloop.c',
 	'libaylp/logging.c',
 	'libaylp/block.c',
 	'libaylp/config.c',
-	'libaylp/anyloop.c',
+	'libaylp/thread_pool.c',
 	'libaylp/xalloc.c',
+	'devices/center_of_mass.c',
 	'devices/device.c',
 	'devices/delay.c',
 	'devices/file_sink.c',

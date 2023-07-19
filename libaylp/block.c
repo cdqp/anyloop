@@ -10,7 +10,7 @@
 
 gsl_block *mat2blk(gsl_matrix *m)
 {
-	gsl_block *ret = gsl_block_alloc(m->size1 * m->size2);
+	gsl_block *ret = xmalloc_type(gsl_block, m->size1 * m->size2);
 	if (m->tda == m->size2) {
 		// rows are contiguous
 		memcpy(ret->data, m->data, sizeof(double) * ret->size);
@@ -30,7 +30,7 @@ gsl_block *mat2blk(gsl_matrix *m)
 
 gsl_block *vec2blk(gsl_vector *v)
 {
-	gsl_block *ret = gsl_block_alloc(v->size);
+	gsl_block *ret = xmalloc_type(gsl_block, v->size);
 	if (v->stride == 1) {
 		// elements are contiguous
 		memcpy(ret->data, v->data, sizeof(double) * ret->size);

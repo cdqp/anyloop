@@ -1,6 +1,7 @@
 #ifndef AYLP_DEVICES_DEVICE_H_
 #define AYLP_DEVICES_DEVICE_H_
 
+#include "devices/center_of_mass.h"
 #include "devices/delay.h"
 #include "devices/file_sink.h"
 #include "devices/logger.h"
@@ -12,30 +13,13 @@ static const struct {
 	const char *uri;
 	int (*init_fun)(struct aylp_device *);
 } init_map [] = {
-	{
-		"anyloop:delay",
-		delay_init
-	},
-	{
-		"anyloop:file_sink",
-		file_sink_init
-	},
-	{
-		"anyloop:logger",
-		logger_init
-	},
-	{
-		"anyloop:stop_after_count",
-		stop_after_count_init
-	},
-	{
-		"anyloop:udp_sink",
-		udp_sink_init
-	},
-	{
-		"anyloop:vonkarman_stream",
-		vonkarman_stream_init
-	},
+	{ "anyloop:center_of_mass", center_of_mass_init },
+	{ "anyloop:delay", delay_init },
+	{ "anyloop:file_sink", file_sink_init },
+	{ "anyloop:logger", logger_init },
+	{ "anyloop:stop_after_count", stop_after_count_init },
+	{ "anyloop:udp_sink", udp_sink_init },
+	{ "anyloop:vonkarman_stream", vonkarman_stream_init },
 };
 
 // match an aylp_device with its initializer function and initialize it

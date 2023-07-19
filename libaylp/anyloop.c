@@ -49,8 +49,6 @@ int main(int argc, char **argv)
 
 	// copy magic number to header
 	state.header.magic = AYLP_MAGIC;
-	// allocate the block
-	state.block = gsl_block_alloc(0);
 
 	// parse options
 	for (argv++; argv; argv++) {

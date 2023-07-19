@@ -114,7 +114,7 @@ int udp_sink_process(struct aylp_device *self, struct aylp_state *state)
 
 int udp_sink_close(struct aylp_device *self)
 {
-	free(self->params); self->params = 0;
+	xfree(self->params);
 	return 0;
 }
 

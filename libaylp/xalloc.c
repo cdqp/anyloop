@@ -7,31 +7,25 @@
 void *xmalloc(size_t size)
 {
 	void *ptr = malloc(size);
-	if (!ptr) {
-		log_fatal("Failed to allocate memory");
-		abort();
-	}
-	return ptr;
+	return alloc_check(ptr);
 }
 
 void *xcalloc(size_t nelem, size_t elsize)
 {
 	void *ptr = calloc(nelem, elsize);
-	if (!ptr) {
-		log_fatal("Failed to allocate memory");
-		abort();
-	}
-	return ptr;
+	return alloc_check(ptr);
 }
 
 void *xrealloc(void *ptr, size_t size)
 {
 	ptr = realloc(ptr, size);
-	if (!ptr) {
-		log_fatal("Failed to allocate memory");
-		abort();
-	}
-	return ptr;
+	return alloc_check(ptr);
+}
+
+char *xstrdup(const char *str)
+{
+	char *str_dup = strdup(str);
+	return (char *)alloc_check(str_dup);
 }
 
 void xfree_impl(void **ptr)
@@ -40,12 +34,12 @@ void xfree_impl(void **ptr)
 	*ptr = NULL;
 }
 
-char *xstrdup(const char *str)
+void *alloc_check(void *ptr)
 {
-	char *str_dup = strdup(str);
-	if (!str_dup) {
+	if (!ptr) {
 		log_fatal("Failed to allocate memory");
 		abort();
-  	}
-	return str_dup;
+	}
+	return ptr;
 }
+
