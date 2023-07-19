@@ -15,6 +15,9 @@ Some ground rules:
 2. Devices are to maintain copies of any memory they allocate. `state->matrix`
 (for example) should *never* be the only pointer to its data; otherwise, that's
 just begging for a memory leak.
+3. If devices fail to do their job, they must return a nonzero error code from
+`process()`. This is especially important if the device was supposed to change
+the pipeline type.
 
 
 Built-in devices

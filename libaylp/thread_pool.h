@@ -24,12 +24,11 @@ struct aylp_queue {
 	int exit;	// true when threads should exit
 };
 
-/** Add a new task to the queue. This call blocks. Returns error code. */
+/** Add a new task to the queue. This call blocks. */
 void task_enqueue(struct aylp_queue *queue, struct aylp_task *task);
 
 /** Grab the oldest task (if any), or wait for a new one if there are no tasks.
-* Put the grabbed task into the task pointer. This call blocks. Returns error
-* code. */
+* This call blocks. Returns a pointer to the oldest task. */
 struct aylp_task *task_dequeue(struct aylp_queue *queue);
 
 /** Start running tasks on the queue. Return when queue->exit is set. */

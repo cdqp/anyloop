@@ -1,7 +1,7 @@
 {
 	"pipeline": [
 		{
-			"uri": "file:./plugin_example.so"
+			"uri": "file:build/plugin_example.so"
 		},
 		{
 			"uri": "anyloop:vonkarman_stream",

@@ -11,7 +11,7 @@
 struct aylp_state state = {0};
 struct aylp_conf conf;
 
-static bool sigint_recieved = false;
+static bool sigint_received = false;
 
 static void cleanup(void)
 {
@@ -35,7 +35,7 @@ void handle_signal(int sig, siginfo_t *info, void *context)
 	UNUSED(info);
 	UNUSED(context);
 	if (sig == SIGINT) {
-		sigint_recieved = true;
+		sigint_received = true;
 	}
 }
 
@@ -43,6 +43,7 @@ void handle_signal(int sig, siginfo_t *info, void *context)
 int main(int argc, char **argv)
 {
 	UNUSED(argc);
+	int err;
 
 	log_init(LOG_INFO);
 
@@ -76,7 +77,8 @@ int main(int argc, char **argv)
 	if (argv) {
 		conf = read_config(*argv);
 	} else {
-		log_info("Usage: `anyloop [-loglevel LOG_LEVEL] [--] path_to_conf.json`");
+		log_info("Usage: `anyloop [-loglevel LOG_LEVEL] [--] "
+			"path_to_conf.json`");
 		log_fatal("Please provide a config file.");
 		return EXIT_FAILURE;
 	}
@@ -121,9 +123,6 @@ int main(int argc, char **argv)
 		log_trace("type check: prev=0x%hX, in=0x%hX, out=0x%hX",
 			type_cur, d.type_in, d.type_out
 		);
-		log_trace("unit check: prev=0x%hX, in=0x%hX, out=0x%hX",
-			units_cur, d.units_in, d.units_out
-		);
 		if (!(d.type_in & type_cur)) {
 			log_fatal("Device %s with input type 0x%hX "
 				"is incompatible with previous type 0x%hX",
@@ -131,6 +130,9 @@ int main(int argc, char **argv)
 			);
 			return EXIT_FAILURE;
 		}
+		log_trace("unit check: prev=0x%hX, in=0x%hX, out=0x%hX",
+			units_cur, d.units_in, d.units_out
+		);
 		if (!(d.units_in & units_cur)) {
 			log_fatal("Device %s with input units 0x%hX "
 				"is incompatible with previous units 0x%hX",
@@ -144,11 +146,24 @@ int main(int argc, char **argv)
 			units_cur = d.units_out;
 	}
 
-	while (!sigint_recieved && state.header.status ^ AYLP_DONE) {
-		for (size_t idx=0; !sigint_recieved && idx<conf.n_devices; idx++) {
-			struct aylp_device *dev = &conf.devices[idx];
+	while (!sigint_received && state.header.status ^ AYLP_DONE) {
+		for (size_t d=0; !sigint_received && d<conf.n_devices; d++) {
+			struct aylp_device *dev = &conf.devices[d];
 			if (dev->process) {
-				dev->process(dev, &state);
+				err = dev->process(dev, &state);
+				// errors are assumed recoverable (e.g. UDP
+				// fails to send) unless the device was supposed
+				// to change the type
+				if (err && dev->type_out
+				&& dev->type_out != dev->type_in) {
+					log_fatal("%s returned error %d but "
+						"was expected to change the "
+						"pipeline type. Exiting.",
+						dev->uri, err
+					);
+					cleanup();
+					return EXIT_FAILURE;
+				}
 				// this logging call could be too much overhead
 				// even when log level is above trace, but I
 				// doubt it
@@ -159,7 +174,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (sigint_recieved)
+	if (sigint_received)
 		log_info("Caught SIGINT; cleaning up");
 	else
 		log_info("AYLP_DONE was set; cleaning up");

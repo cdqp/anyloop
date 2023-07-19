@@ -147,7 +147,9 @@ int vonkarman_stream_init(struct aylp_device *self)
 {
 	self->process = &vonkarman_stream_process;
 	self->close = &vonkarman_stream_close;
-	self->device_data = xcalloc(1, sizeof(struct aylp_vonkarman_stream_data));
+	self->device_data = xcalloc(1,
+		sizeof(struct aylp_vonkarman_stream_data)
+	);
 	struct aylp_vonkarman_stream_data *data = self->device_data;
 
 	// some default params
@@ -213,8 +215,9 @@ int vonkarman_stream_init(struct aylp_device *self)
 		);
 		data->win_width = 1; data->win_height = 1;
 	}
-	if ((size_t) abs(data->cur_step_x) > data->screen_size - data->win_width
-	|| (size_t) abs(data->cur_step_y) > data->screen_size - data->win_height) {
+	if ((size_t)abs(data->cur_step_x) > data->screen_size - data->win_width
+	|| (size_t)abs(data->cur_step_y) > data->screen_size - data->win_height)
+	{
 		log_error("Step size > size - width or size - height; "
 			"falling back to 0,0"
 		);
@@ -240,8 +243,8 @@ int vonkarman_stream_init(struct aylp_device *self)
 	while (read_len != sizeof(rng_seed)) {
 		read_len = read(urandom, &rng_seed, sizeof(rng_seed));
 		if (read_len < 0) {
-			log_error("Error occured while reading /dev/urandom for a seed: %s",
-				strerror(errno)
+			log_error("Error occured while reading /dev/urandom "
+				"for a seed: %s", strerror(errno)
 			);
 			return -1;
 		}
@@ -263,7 +266,7 @@ int vonkarman_stream_init(struct aylp_device *self)
 	// set types and units
 	self->type_in = AYLP_T_ANY;
 	self->units_in = AYLP_U_ANY;
-	self->type_out = AYLP_T_ANY;
+	self->type_out = AYLP_T_MATRIX;
 	self->units_out = AYLP_U_RAD;
 
 	return 0;
