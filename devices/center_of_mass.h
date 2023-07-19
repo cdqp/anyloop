@@ -40,10 +40,10 @@ struct aylp_center_of_mass_data {
 int center_of_mass_init(struct aylp_device *self);
 
 /** Process center_of_mass device once per loop.
-* Will replace pipeline data with a vector of interleaved center-of-mass x and y
+* Will replace pipeline data with a vector of interleaved center-of-mass y and x
 * coordinates (a vector of length 2N, where N is the number of regions of
 * interest). For example, if the input has four regions of interest, the output
-* will be [x1,y1,x2,y2,x3,y3,x4,y4] where each x,y is from -1 to 1, where 0
+* will be [y1,x1,y2,x2,y3,x3,y4,x4] where each y,x is from -1 to 1, where 0
 * means perfectly centered in the region of interest. It is assumed that the
 * input is of type AYLP_T_BYTES, and is written in order of increasing x
 * coordinate, then increasing y coordinate. */
