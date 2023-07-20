@@ -40,7 +40,7 @@ bool log_set_level_by_name(char *level_name)
 {
 	const size_t num_levels = sizeof(level_strings)/sizeof(*level_strings);
 	for (size_t i=0; i<num_levels; i++) {
-		if (strcmp(level_name, level_strings[i]) == 0) {
+		if (strcasecmp(level_name, level_strings[i]) == 0) {
 			log_status.level = i;
 			return true;
 		}

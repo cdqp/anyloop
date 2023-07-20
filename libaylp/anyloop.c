@@ -1,12 +1,24 @@
 #include <errno.h>
 #include <signal.h>
-#include <gsl/gsl_block.h>
+#include <stdbool.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <gsl/gsl_block.h>
+
 #include "anyloop.h"
 #include "logging.h"
 #include "config.h"
 #include "xalloc.h"
 #include "../devices/device.h"
+
+const char *help_msg = "\nUsage: `anyloop [options] your_config_file.json`\n"
+	"Options:\n"
+	"-h/--help               print this help message and exit\n"
+	"-l/--loglevel <level>   set log level\n"
+	"-p/--profile            enable profiling\n"
+	"Allowed log levels: TRACE, DEBUG, INFO, WARN, ERROR, FATAL\n"
+	"Example: `anyloop -pl TRACE contrib/conf_example.json\n"
+;
 
 struct aylp_state state = {0};
 struct aylp_conf conf;
@@ -40,45 +52,87 @@ void handle_signal(int sig, siginfo_t *info, void *context)
 }
 
 
+// Read the argument at arg; if it matches opt_short or opt_long, return true,
+// and additionally, if value is non-null, put arg+1 into *value. For example,
+// if opt_short is 'o' and opt_long is "option", then both "-o foo" and
+// "--option foo" will set `*value="foo"`. Also decrease chars_remaining if we
+// matched an option or even set it to zero if we matched a long option.
+static bool check_opt(char **arg, char opt_short, char *opt_long,
+	char **value, int *chars_remaining
+){
+	if ((*arg)[0] != '-') return false;
+	if ((*arg)[1] == '-') {
+		if (strcmp(*arg+2, opt_long)) return false;
+		if (chars_remaining) *chars_remaining = 0;
+	} else {
+		char *occ = strchr(*arg, opt_short);
+		if (!occ) return false;
+		*occ = '_';	// replace occurence with underscore
+		if (chars_remaining) *chars_remaining -= 1;
+	}
+	// okay, it's a match; grab the value if needed
+	if (value) *value = arg[1];
+	// set the value to null so we don't try to parse it as an option
+	arg[1] = 0;
+	return true;
+}
+
+
 int main(int argc, char **argv)
 {
-	UNUSED(argc);
 	int err;
-
+	// initialize logger with default level
 	log_init(LOG_INFO);
-
 	// copy magic number to header
 	state.header.magic = AYLP_MAGIC;
 
-	// parse options
-	for (argv++; argv; argv++) {
-		char *arg = *argv;
-		if (arg[0] != '-' || strcmp(arg, "--") == 0)
-			break;
+	// check for lone -h without config file
+	if (check_opt(argv+argc-1, 'h', "help", 0, 0)) {
+		log_info(help_msg);
+		return EXIT_SUCCESS;
+	}
+	// parse all but last argument
+	for (int i = 1; i < argc-1; i++) {
+		// if arg is null, it was handled already; keep going
+		if (!argv[i]) continue;
 
-		if (strcmp(arg, "-loglevel") == 0) {
-			argv++;
-			if (*argv) {
-				if (!log_set_level_by_name(*argv))
-				return EXIT_FAILURE;
-			} else {
-				log_fatal("Expected an argument to -loglevel");
+		int remain = strlen(argv[i]);
+		char *val;
+		if (check_opt(argv+i, 'h', "help", 0, &remain)) {
+			log_info(help_msg);
+			return EXIT_SUCCESS;
+		}
+		if (check_opt(argv+i, 'l', "loglevel", &val, &remain)) {
+			if (!val) {
+				log_fatal("Expected a value for "
+					"-l/--loglevel", argv[i]
+				);
 				return EXIT_FAILURE;
 			}
-		} else {
-			log_fatal("Unknown option %s", arg);
+			if (!log_set_level_by_name(val))
+				return EXIT_FAILURE;
+		}
+		if (check_opt(argv+i, 'p', "profile", &val, &remain)) {
+			log_warn("-p/--profile not yet implemented.");
+			// TODO: @wooosh
+		}
+		// add more check_opt calls for new options
+
+		// if there are chars remaining that we didn't parse and they
+		// aren't just the leading '-' from short options, throw error
+		if (remain && !(remain == 1 && argv[i][0] == '-')) {
+			log_fatal("Unknown or repeated option(s): %s", argv[i]);
 			return EXIT_FAILURE;
 		}
 	}
 
-	// parse filename
-	if (argv) {
-		conf = read_config(*argv);
-	} else {
-		log_info("Usage: `anyloop [-loglevel LOG_LEVEL] [--] "
-			"path_to_conf.json`");
+	// parse filename from last argument
+	if (argc < 2 || !argv[argc-1]) {
+		log_info(help_msg);
 		log_fatal("Please provide a config file.");
 		return EXIT_FAILURE;
+	} else {
+		conf = read_config(argv[argc-1]);
 	}
 
 	struct sigaction signal_handler;
