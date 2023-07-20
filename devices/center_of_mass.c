@@ -31,9 +31,10 @@ void com_mat_uchar(gsl_matrix_uchar *src, double *dst)
 			s += el;
 		}
 	}
-	// set final vlaues, scaling from 0:size (given by y/s or x/s) to -1:1
-	dst[0] = -1.0 + 2*y/(s*src->size1);
-	dst[1] = -1.0 + 2*x/(s*src->size2);
+	// set final values, scaling from 0:size-1 (given by y/s or x/s) to -1:1
+	dst[0] = -1.0 + 2*y/(s*(src->size1-1));
+	dst[1] = -1.0 + 2*x/(s*(src->size2-1));
+	//log_debug("%F,%F", dst[0], dst[1]);
 }
 
 
@@ -166,7 +167,10 @@ int center_of_mass_process(struct aylp_device *self, struct aylp_state *state)
 			data->subaps[t].size1 = data->region_height;
 			data->subaps[t].size2 = data->region_width;
 			data->subaps[t].tda = max_x;
-			data->subaps[t].data = state->bytes->data;
+			data->subaps[t].data = &state->bytes->data[
+				max_x * data->region_height * j
+				+ i * data->region_width
+			];
 			data->subaps[t].block = state->bytes;
 			data->subaps[t].owner = 0;
 			// set task
@@ -190,7 +194,7 @@ int center_of_mass_process(struct aylp_device *self, struct aylp_state *state)
 	state->header.type = self->type_out;
 	state->header.units = self->units_out;
 	state->header.log_dim.y = data->com->size;
-	state->header.log_dim.x = 0;
+	state->header.log_dim.x = 1;
 	return 0;
 }
 
