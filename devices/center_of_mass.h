@@ -45,7 +45,7 @@ int center_of_mass_init(struct aylp_device *self);
 * interest). For example, if the input has four regions of interest, the output
 * will be [y1,x1,y2,x2,y3,x3,y4,x4] where each y,x is from -1 to 1, where 0
 * means perfectly centered in the region of interest. It is assumed that the
-* input is of type AYLP_T_BYTES, and is written in order of increasing x
+* input is of type AYLP_T_MATRIX_UCHAR, and is written in order of increasing x
 * coordinate, then increasing y coordinate. */
 int center_of_mass_process(struct aylp_device *self, struct aylp_state *state);
 

@@ -46,15 +46,17 @@ enum {
 typedef uint8_t aylp_type;
 enum {
 	/** Indicates that there is no data in the pipeline yet. */
-	AYLP_T_NONE	= 1 << 0,
+	AYLP_T_NONE		= 1 << 0,
 	/** For gsl_block. */
-	AYLP_T_BLOCK	= 1 << 1,
+	AYLP_T_BLOCK		= 1 << 1,
 	/** For gsl_vector. */
-	AYLP_T_VECTOR	= 1 << 2,
+	AYLP_T_VECTOR		= 1 << 2,
 	/** For gsl_matrix. */
-	AYLP_T_MATRIX	= 1 << 3,
+	AYLP_T_MATRIX		= 1 << 3,
 	/** For gsl_block_uchar. */
-	AYLP_T_BYTES	= 1 << 4,
+	AYLP_T_BLOCK_UCHAR	= 1 << 4,
+	/** For gsl_matrix_uchar. */
+	AYLP_T_MATRIX_UCHAR	= 1 << 5,
 	/** Used to signal compatibility with any (gsl) type.
 	* Devices must also set AYLP_U_ANY to be compatible with any aylp_type.
 	*/
@@ -140,7 +142,8 @@ struct aylp_state {
 		gsl_block *block;
 		gsl_vector *vector;
 		gsl_matrix *matrix;
-		gsl_block_uchar *bytes;
+		gsl_block_uchar *block_uchar;
+		gsl_matrix_uchar *matrix_uchar;
 	};
 };
 

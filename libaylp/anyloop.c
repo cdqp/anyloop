@@ -36,7 +36,7 @@ static void cleanup(void)
 	}
 	conf.n_devices = 0;
 	xfree(conf.devices);
-	// we actually *don't* want to free the state block/vector/matrix/bytes,
+	// we actually *don't* want to free the state block/vector/matrix/etc,
 	// because it will never be the only pointer to that data, and will have
 	// been freed by whatever device really owns that data.
 }

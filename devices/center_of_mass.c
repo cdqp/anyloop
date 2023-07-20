@@ -110,7 +110,7 @@ int center_of_mass_init(struct aylp_device *self)
 	log_info("Started %llu threads", data->thread_count);
 
 	// set types and units
-	self->type_in = AYLP_T_BYTES;
+	self->type_in = AYLP_T_MATRIX_UCHAR;
 	self->units_in = AYLP_U_ANY;
 	self->type_out = AYLP_T_VECTOR;
 	self->units_out = AYLP_U_MINMAX;
@@ -121,15 +121,8 @@ int center_of_mass_init(struct aylp_device *self)
 int center_of_mass_process(struct aylp_device *self, struct aylp_state *state)
 {
 	struct aylp_center_of_mass_data *data = self->device_data;
-	// TODO: it is slightly non-obvious that we take each byte in the
-	// block_uchar as one element. Should we re-type for matrix_uchar and
-	// update the corresponding plugins?
-	size_t max_y = state->header.log_dim.y;
-	size_t max_x = state->header.log_dim.x;
-	if (max_y * max_x != state->bytes->size) {
-		log_error("log_dim.y * log_dim.x != bytes->size; giving up");
-		return -1;
-	}
+	size_t max_y = state->matrix_uchar->size1;
+	size_t max_x = state->matrix_uchar->size2;
 	size_t y_subap_count = max_y / data->region_height;
 	size_t x_subap_count = max_x / data->region_width;
 	// TODO: we assume one task per subaperture, but this might not be ideal
@@ -140,8 +133,8 @@ int center_of_mass_process(struct aylp_device *self, struct aylp_state *state)
 	size_t n_tasks = y_subap_count * x_subap_count;
 	// It's unfortunately quite ugly that we malloc here, but it's the
 	// simplest fast solution I can think of to the issue of not knowing the
-	// size of state->bytes when init() is run. Remember that `data` is
-	// `calloc`ed so we are guaranteed to malloc on first process.
+	// size of state->matrix_uchar when init() is run. Remember that `data`
+	// is `calloc`ed so we are guaranteed to malloc on first process.
 	if (data->n_tasks < n_tasks) {
 		// we *could* realloc instead of this free/malloc combo, but I
 		// expect free/malloc to be faster since we don't care about
@@ -164,15 +157,13 @@ int center_of_mass_process(struct aylp_device *self, struct aylp_state *state)
 		for (size_t j=0; j < x_subap_count; j++) {
 			// set source data (if we switch to matrix input, this
 			// is a simple submatrix call)
-			data->subaps[t].size1 = data->region_height;
-			data->subaps[t].size2 = data->region_width;
-			data->subaps[t].tda = max_x;
-			data->subaps[t].data = &state->bytes->data[
-				max_x * data->region_height * j
-				+ i * data->region_width
-			];
-			data->subaps[t].block = state->bytes;
-			data->subaps[t].owner = 0;
+			data->subaps[t] = gsl_matrix_uchar_submatrix(
+				state->matrix_uchar,
+				i * data->region_height,
+				j * data->region_width,
+				data->region_height,
+				data->region_width
+			).matrix;
 			// set task
 			data->tasks[t] = (struct aylp_task){
 				.func = (void(*)(void*,void*))com_mat_uchar,
