@@ -95,6 +95,12 @@ int center_of_mass_init(struct aylp_device *self)
 			log_warn("Unknown parameter \"%s\"", key);
 		}
 	}
+	if (!data->region_height || !data->region_width) {
+		log_error("You must provide nonzero region_height and "
+			"region_width params"
+		);
+		return -1;
+	}
 
 	// start threads
 	data->threads = xmalloc(data->thread_count * sizeof(pthread_t));

@@ -87,7 +87,7 @@ int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 		} else {
 			// rows are not contiguous
 			bytes->data = xmalloc(bytes->size);
-			log_trace("got non-contiguous matrix of %llu doubles",
+			log_trace("got non-contiguous matrix of %llu uchars",
 				bytes->size
 			);
 			for (size_t i = 0; i < m->size1; i++) {
