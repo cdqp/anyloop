@@ -6,9 +6,12 @@ project(
 	# this is worth occasionally turning on to check
 )
 
-json_dep = dependency('json-c')
-gsl_dep = dependency('gsl')
-deps = [json_dep, gsl_dep]
+deps = [
+	dependency('json-c'),
+	dependency('gsl'),
+	dependency('threads'),
+	dependency('dl')
+]
 
 project_source_files = [
 	'libaylp/anyloop.c',
@@ -38,10 +41,10 @@ executable('anyloop', project_source_files,
 
 shared_library('plugin_example', 'contrib/plugin_example.c',
 	name_prefix: '',
-	install: true,
 	dependencies: deps,
-	install_dir: 'plugins',
 	include_directories: incdir,
+	install: true,
+	install_dir: '/opt/anyloop',
 	override_options: 'b_lundef=false'
 )
 

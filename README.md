@@ -17,10 +17,36 @@ copy of the MPL was not distributed with this repository, you can obtain one at
 Installing
 ----------
 
-You will need the following packages to compile and run from source:
+You will need the following packages to compile and run anyloop from source:
 
 - meson
 - pkgconf
-- json-c (possibly json-c-dev)
-- gsl (possibly gsl-dev)
+- json-c
+- gsl
+
+For example:
+
+```sh
+# archlinux (TODO: AUR package)
+sudo pacman -S --asdeps meson pkgconf json-c gsl
+# alpine
+doas pkg add meson pkgconf json-c json-c-dev gsl gsl-dev
+# raspbian
+sudo apt install meson pkgconf libjson-c5 libjson-c-devel libgsl25 libgsl-devel
+```
+
+Once you have satisfied dependencies, build anyloop with meson:
+
+```sh
+meson setup build
+meson compile -C build
+sudo meson install -C build
+```
+
+Uninstalling
+------------
+
+Soon, anyloop will at least be an AUR package so those using Archlinux can
+simply uninstall via pacman. If you installed with meson, manually wipe the
+`/opt/anyloop` directory and the binary at the path returned by `which anyloop`.
 
