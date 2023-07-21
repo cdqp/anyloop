@@ -6,11 +6,12 @@ project(
 	# this is worth occasionally turning on to check
 )
 
+c = meson.get_compiler('c')
 deps = [
 	dependency('json-c'),
 	dependency('gsl'),
 	dependency('threads'),
-	dependency('dl')
+	c.find_library('dl')
 ]
 
 project_source_files = [
