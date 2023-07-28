@@ -6,6 +6,7 @@
 #include "devices/file_sink.h"
 #include "devices/logger.h"
 #include "devices/stop_after_count.h"
+#include "devices/test_source.h"
 #include "devices/udp_sink.h"
 #include "devices/vonkarman_stream.h"
 
@@ -18,6 +19,7 @@ static const struct {
 	{ "anyloop:file_sink", file_sink_init },
 	{ "anyloop:logger", logger_init },
 	{ "anyloop:stop_after_count", stop_after_count_init },
+	{ "anyloop:test_source", test_source_init },
 	{ "anyloop:udp_sink", udp_sink_init },
 	{ "anyloop:vonkarman_stream", vonkarman_stream_init },
 };
