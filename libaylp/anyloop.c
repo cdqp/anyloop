@@ -31,8 +31,14 @@ static void cleanup(void)
 		struct aylp_device *dev = &conf.devices[idx];
 		if (dev->close) {
 			dev->close(dev);
+			log_trace("Closed %s", dev->uri);
 		}
-		log_trace("Closed %s", dev->uri);
+		if (dev->params) {
+			json_object_object_foreach(dev->params, key, _) {
+				json_object_object_del(dev->params, key);
+			}
+			xfree(dev->params);
+		}
 	}
 	conf.n_devices = 0;
 	xfree(conf.devices);

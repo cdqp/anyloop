@@ -205,8 +205,7 @@ int center_of_mass_close(struct aylp_device *self)
 	}
 	xfree(data->threads);
 	xfree(data->tasks);
-	xfree(self->params);
-	xfree(self->device_data);
+	xfree(data);
 	return 0;
 }
 

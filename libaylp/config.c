@@ -28,7 +28,9 @@ struct aylp_conf read_config(const char *file)
 				exit(1);
 			}
 			ret.n_devices = json_object_array_length(sub1);
-			ret.devices = xcalloc(ret.n_devices, sizeof(struct aylp_device));
+			ret.devices = xcalloc(
+				ret.n_devices, sizeof(struct aylp_device
+			));
 			log_info("Seeing %d devices", ret.n_devices);
 			for (size_t idx=0; idx<ret.n_devices; idx++) {
 				json_object *sub2 = json_object_array_get_idx(
@@ -54,6 +56,7 @@ struct aylp_conf read_config(const char *file)
 							ret.devices[idx].uri
 						);
 						// take ownership of param obj
+						// (freed in cleanup())
 						ret.devices[idx].params =
 							json_object_get(sub4);
 					} else {

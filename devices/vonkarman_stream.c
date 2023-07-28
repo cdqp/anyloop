@@ -317,14 +317,10 @@ int vonkarman_stream_process(struct aylp_device *self, struct aylp_state *state)
 
 int vonkarman_stream_close(struct aylp_device *self)
 {
-	json_object_object_foreach(self->params, key, _) {
-		json_object_object_del(self->params, key);
-	}
-	xfree(self->params);
 	struct aylp_vonkarman_stream_data *data = self->device_data;
 	xfree_type(gsl_rng, data->rng);
 	xfree_type(gsl_matrix, data->phase_screen);
-	xfree(self->device_data);
+	xfree(data);
 	return 0;
 }
 

@@ -71,14 +71,10 @@ int file_sink_process(struct aylp_device *self, struct aylp_state *state)
 
 int file_sink_close(struct aylp_device *self)
 {
-	json_object_object_foreach(self->params, key, _) {
-		json_object_object_del(self->params, key);
-	}
-	xfree(self->params);
 	struct aylp_file_sink_data *data = self->device_data;
 	fflush(data->fp);
 	fclose(data->fp);
-	xfree(self->device_data);
+	xfree(data);
 	return 0;
 }
 

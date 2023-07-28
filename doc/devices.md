@@ -11,11 +11,12 @@ See the `aylp_device` struct in `anyloop.h`. Devices have init and close
 functions that each run once, and a process function that runs once every loop.
 Some ground rules:
 
-1. Devices are always expected to free any memory they allocated.
-2. Devices are to maintain copies of any memory they allocate. `state->matrix`
+1. Devices must free any memory they allocate.
+2. Devices must not free any memory they didn't allocate.
+3. Devices are to maintain copies of any memory they allocate. `state->matrix`
 (for example) should *never* be the only pointer to its data; otherwise, that's
 just begging for a memory leak.
-3. If devices fail to do their job, they must return a nonzero error code from
+4. If devices fail to do their job, they must return a nonzero error code from
 `process()`. This is especially important if the device was supposed to change
 the pipeline type.
 
