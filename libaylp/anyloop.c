@@ -175,7 +175,9 @@ int main(int argc, char **argv)
 		log_trace("type check: prev=0x%hX, in=0x%hX, out=0x%hX",
 			type_cur, d.type_in, d.type_out
 		);
-		if (!(d.type_in & type_cur)) {
+		// typecheck fails if any of the bits set in type_cur are not
+		// set in type_in
+		if ((d.type_in ^ type_cur) & type_cur) {
 			log_fatal("Device %s with input type 0x%hX "
 				"is incompatible with previous type 0x%hX",
 				d.uri, d.type_in, type_cur

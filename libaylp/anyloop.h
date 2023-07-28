@@ -40,8 +40,9 @@ enum {
 
 
 /** Enum for type of data in aylp_state.
- * Devices must specify their input and output types after they are initialized.
- * Null is a special type that means "unaltered" when set as a device output.
+ * After being initialized, devices must specify the types they are capable of
+ * inputting and the types they may output. Null is a special type that means
+ * "unaltered" when set as a device output.
  */
 typedef uint8_t aylp_type;
 enum {
@@ -65,9 +66,10 @@ enum {
 };
 
 
-/** Enum for type of data in aylp_state.
- * Devices must specify their input and output types after they are initialized.
- * Null is a special type that means "unaltered" when set as a device output.
+/** Enum for units of data in aylp_state.
+ * After being initialized, devices must specify the units they are capable of
+ * inputting and the units they may output. Null is a special type that means
+ * "unaltered" when set as a device output.
  */
 typedef uint8_t aylp_units;
 enum {
@@ -159,8 +161,10 @@ struct aylp_device {
 	char *uri;
 
 	/** Input and output types/units accepted and produced by the device.
-	* Each device's input type and units must independently logical-and to a
-	* nonzero value with the last non-null output type before it in the
+	* For each device, its input type and units must contain all the bits
+	* set in the last non-null output type before it in the pipeline. That
+	* is, a device is compatible with the pipeline if it is capable of
+	* accepting all the possible output types and units before it in the
 	* pipeline. If a device comes first in the pipeline, and it has an input
 	* type or units other than AYLP_T_ANY or AYLP_U_ANY, it must be
 	* compatible with the output type and units of the last device in the
