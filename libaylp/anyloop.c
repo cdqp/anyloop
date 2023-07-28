@@ -89,8 +89,9 @@ int main(int argc, char **argv)
 	int err;
 	// initialize logger with default level
 	log_init(LOG_INFO);
-	// copy magic number to header
+	// copy magic number and version to header
 	state.header.magic = AYLP_MAGIC;
+	state.header.version = AYLP_SCHEMA_VERSION;
 
 	// check for lone -h without config file
 	if (check_opt(argv+argc-1, 'h', "help", 0, 0)) {
@@ -118,7 +119,7 @@ int main(int argc, char **argv)
 			if (!log_set_level_by_name(val))
 				return EXIT_FAILURE;
 		}
-		if (check_opt(argv+i, 'p', "profile", &val, &remain)) {
+		if (check_opt(argv+i, 'p', "profile", 0, &remain)) {
 			log_warn("-p/--profile not yet implemented.");
 			// TODO: @wooosh
 		}

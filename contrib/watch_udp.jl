@@ -6,7 +6,8 @@ using Sockets
 
 struct AYLP_Header
     magic::Vector{UInt8}
-    aylp_status::UInt16
+    aylp_version::UInt8
+    aylp_status::UInt8
     aylp_type::UInt8
     aylp_units::UInt8
     log_dim_y::UInt64
@@ -31,7 +32,8 @@ function Base.read(io::IO, ::Type{AYLP_Header})
         magic[i] = read(io, UInt8)
     end
     @assert String(magic) == "AYLP";
-    aylp_status = read(io, UInt16)
+    aylp_version = read(io, UInt8)
+    aylp_status = read(io, UInt8)
     aylp_units = read(io, UInt8)
     aylp_type = read(io, UInt8)
     log_dim_y = read(io, UInt64)
@@ -39,7 +41,7 @@ function Base.read(io::IO, ::Type{AYLP_Header})
     pitch_y = read(io, Float64)
     pitch_x = read(io, Float64)
     return AYLP_Header(
-        magic, aylp_status, aylp_units, aylp_type,
+        magic, aylp_version, aylp_status, aylp_units, aylp_type,
         log_dim_y, log_dim_x, pitch_y, pitch_x
     )
 end

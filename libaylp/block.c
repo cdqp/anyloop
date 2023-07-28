@@ -15,10 +15,14 @@
 int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 {
 	switch (state->header.type) {
+	case 0: {
+		log_error("Pipeline type is null");
+		return -EPIPE;
+	}
 	case AYLP_T_BLOCK: {
 		bytes->size = sizeof(double) * state->block->size;
 		bytes->data = (unsigned char *)state->block->data;
-		log_trace("got block of %llu doubles", bytes->size);
+		log_trace("got block of %llu doubles", state->block->size);
 		return 0;
 	}
 	case AYLP_T_VECTOR: {
@@ -26,7 +30,7 @@ int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 		bytes->size = sizeof(double) * v->size;
 		if (LIKELY(v->stride == 1)) {
 			log_trace("got contiguous vector of %llu doubles",
-				bytes->size
+				state->vector->size
 			);
 			bytes->data = (unsigned char *)v->data;
 			return 0;
@@ -38,7 +42,7 @@ int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 				;
 			}
 			log_trace("got non-contiguous vector of %llu doubles",
-				bytes->size
+				state->vector->size
 			);
 			return 1;
 		}
@@ -49,15 +53,17 @@ int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 		if (LIKELY(m->tda == m->size2)) {
 			// rows are contiguous
 			bytes->data = (unsigned char *)m->data;
-			log_trace("got contiguous matrix of %llu doubles",
-				bytes->size
+			log_trace("got contiguous matrix of %llu by %llu "
+				"doubles",
+				state->matrix->size1, state->matrix->size2
 			);
 			return 0;
 		} else {
 			// rows are not contiguous
 			bytes->data = xmalloc(bytes->size);
-			log_trace("got non-contiguous matrix of %llu doubles",
-				bytes->size
+			log_trace("got non-contiguous matrix of %llu by %llu "
+				"doubles",
+				state->matrix->size1, state->matrix->size2
 			);
 			for (size_t i = 0; i < m->size1; i++) {
 				memcpy(bytes->data + sizeof(double)*i*m->size2,
@@ -80,7 +86,7 @@ int get_contiguous_bytes(gsl_block_uchar *bytes, struct aylp_state *state)
 		if (LIKELY(m->tda == m->size2)) {
 			// rows are contiguous
 			bytes->data = m->data;
-			log_trace("got contiguous matrix of %llu doubles",
+			log_trace("got contiguous matrix of %llu uchars",
 				bytes->size
 			);
 			return 0;

@@ -31,7 +31,7 @@ _Static_assert(sizeof(size_t) == 8, "we need size_t to be 64-bit for gsl");
 
 
 /** Flags pertaining to loop status. */
-typedef uint16_t aylp_status;
+typedef uint8_t aylp_status;
 enum {
 	/** Signals that we are done with the loop. */
 	AYLP_DONE	= 1 << 0,
@@ -91,6 +91,9 @@ enum {
 /** Little-endian representation of "AYLP" as a magic number. */
 #define AYLP_MAGIC 0x504C5941
 
+/** Schema version (null means unstable). */
+#define AYLP_SCHEMA_VERSION 0
+
 /**
  * Status of loop and header for saved data files.
  * Saved data files will use this as a header (see file_sink_process()), and
@@ -101,8 +104,9 @@ struct aylp_header {
 	/** Magic number to verify from another end (for endianness, etc.) */
 	uint32_t magic;
 
-	/** Status flags and type of data. */
-	aylp_status status;	// uint16_t
+	/** Schema version, status flags, and type of data. */
+	uint8_t version;
+	aylp_status status;	// uint8_t
 	aylp_type type;		// uint8_t
 	aylp_units units;	// uint8_t
 
