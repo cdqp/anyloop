@@ -72,7 +72,7 @@ int test_source_init(struct aylp_device *self)
 	self->type_in = AYLP_T_ANY;
 	self->units_in = AYLP_U_ANY;
 	self->type_out = data->type;
-	self->units_out = 0;
+	self->units_out = AYLP_U_MINMAX;
 	return 0;
 }
 
