@@ -19,6 +19,7 @@ project_source_files = [
 	'libaylp/logging.c',
 	'libaylp/block.c',
 	'libaylp/config.c',
+	'libaylp/pretty.c',
 	'libaylp/thread_pool.c',
 	'libaylp/xalloc.c',
 	'devices/center_of_mass.c',

@@ -25,7 +25,7 @@
  * r0 is Fried parameter [m],
  * Gx and Gy are width and height of phase screen [m],
  * x and y are dimensionless (indices), and
- * output is dimensionless (1/px).
+ * output is Fourier amplitude in [rad/px].
  * Ivy's original MATLAB code was (escaping the at sign)
  * karmanSpec = atsign(L0,r0,Gx,Gy,x,y) (0.15132*(Gx*Gy)^(-1/2)*r0^(-5/6) ...
  *     * ((x/Gx).^2+(y/Gy).^2+1/L0^2).^(-11/12));
@@ -42,44 +42,17 @@ static double karman_spec(double L0, double r0, double Gx, double Gy,
 }
 
 
-/** Compute the 1D in-place half-complex-to-real backward FFT.
- * Uses gsl, of course, choosing which routine to use depending on if the size
- * is a power of two.
- */
-static void backward_fft(double data[], size_t stride, size_t n)
-{
-	gsl_fft_halfcomplex_wavetable *wt = xmalloc_type(
-		gsl_fft_halfcomplex_wavetable, n
-	);
-	gsl_fft_real_workspace *ws = xmalloc_type(
-		gsl_fft_real_workspace, n
-	);
-	// this function is not actually mentioned in the docs, but it's
-	// in gsl_fft_halfcomplex.h in the sources, and presumably works
-	// the same way as gsl_fft_halfcomplex_transform() (which *is*
-	// documented), but with the sign change in the exponent
-	int err = gsl_fft_halfcomplex_backward(data, stride, n, wt, ws);
-	xfree_type(gsl_fft_halfcomplex_wavetable, wt);
-	xfree_type(gsl_fft_real_workspace, ws);
-	if (err) {
-		log_error("Backward fft failed, gsl_errno=%d\n", err);
-		exit(EXIT_FAILURE);
-	}
-	return;
-}
-
-
 /** Generate a von Kármán phase screen.
  * This function generates a von Kármán phase screen by first weighting the
  * spectrum with Hermitian unit gaussian noise, then taking the inverse Fourier
  * transform of that 2D spectrum. This method significantly undersamples low
  * frequency components. There are ways to compensate for this, but I have yet
- * to implement them. For these other ways, see
+ * to implement them. For these other ways, see:
  * https://doi.org/10.1364/OE.14.000988, https://doi.org/10.1364/OE.20.000681,
  * and (again) parts of https://doi.org/10.1364/AO.43.004527. That being said,
- * complete accuracy is not a huge priority, because the Fried diameter is by no
- * means a certain quantity and fluctuates greatly based on time and
- * environment.
+ * complete accuracy is not a huge priority, because the Fried diameter and
+ * outer scale length are by no means certain quantities and fluctuate greatly
+ * based on time and environment.
  */
 static int generate_phase_screen(struct aylp_device *self)
 {
@@ -119,21 +92,58 @@ static int generate_phase_screen(struct aylp_device *self)
 	// set the 0,0 element to zero (it's nonphysical)
 	gsl_matrix_set(data->phase_screen, 0, 0, 0.0);
 	log_trace("Generated Fourier components");
-	// perform a 2D backward-fft by doing a bunch of 1D backward ffts
+	if (log_get_level() <= LOG_DEBUG) {
+		// DEBUG: write the matrix to a file
+		log_debug("Writing components to components.bin");
+		FILE *fp = fopen("components.bin", "wb");
+		gsl_matrix_fwrite(fp, data->phase_screen);
+		fflush(fp);
+		fclose(fp);
+	}
+	// Perform a 2D backward-fft by doing a bunch of 1D, in-place,
+	// half-complex-to-real backward ffts. While the halfcomplex_backward
+	// function is not actually mentioned in the docs, it's in
+	// gsl_fft_halfcomplex.h in the sources, and presumably works the same
+	// way as gsl_fft_halfcomplex_transform() (which *is* documented), but
+	// with the sign change in the exponent.
+	gsl_fft_halfcomplex_wavetable *wt_row = xmalloc_type(
+		gsl_fft_halfcomplex_wavetable, N
+	);
+	gsl_fft_real_workspace *ws_row = xmalloc_type(
+		gsl_fft_real_workspace, N
+	);
+	gsl_fft_halfcomplex_wavetable *wt_col = xmalloc_type(
+		gsl_fft_halfcomplex_wavetable, M
+	);
+	gsl_fft_real_workspace *ws_col = xmalloc_type(
+		gsl_fft_real_workspace, M
+	);
 	for (size_t x=0; x<M; x++) {
 		// backward fft each row
-		backward_fft(
+		int err = gsl_fft_halfcomplex_backward(
 			data->phase_screen->data + x*N,
-			1, N
+			1, N, wt_row, ws_row
 		);
+		if (err) {
+			log_error("Backward fft failed, gsl_errno=%d\n", err);
+			return -1;
+		}
 	}
 	for (size_t y=0; y<N; y++) {
 		// backward fft each column
-		backward_fft(
+		int err = gsl_fft_halfcomplex_backward(
 			data->phase_screen->data + y,
-			data->phase_screen->tda, M
+			data->phase_screen->tda, M, wt_col, ws_col
 		);
+		if (err) {
+			log_error("Backward fft failed, gsl_errno=%d\n", err);
+			return -1;
+		}
 	}
+	xfree_type(gsl_fft_halfcomplex_wavetable, wt_row);
+	xfree_type(gsl_fft_real_workspace, ws_row);
+	xfree_type(gsl_fft_halfcomplex_wavetable, wt_col);
+	xfree_type(gsl_fft_real_workspace, ws_col);
 	if (log_get_level() <= LOG_DEBUG) {
 		// DEBUG: write the matrix to a file
 		log_debug("Writing screen to screen.bin");
@@ -169,13 +179,13 @@ int vonkarman_stream_init(struct aylp_device *self)
 			// keys starting with _ are comments
 		} else if (!strcmp(key, "L0")) {
 			data->L0 = json_object_get_double(val);
-			log_trace("L0 = %E", data->L0);
+			log_trace("L0 = %G", data->L0);
 		} else if (!strcmp(key, "r0")) {
 			data->r0 = json_object_get_double(val);
-			log_trace("r0 = %E", data->r0);
+			log_trace("r0 = %G", data->r0);
 		} else if (!strcmp(key, "pitch")) {
 			data->pitch = json_object_get_double(val);
-			log_trace("pitch = %E", data->pitch);
+			log_trace("pitch = %G", data->pitch);
 		} else if (!strcmp(key, "screen_size")) {
 			data->screen_size = json_object_get_uint64(val);
 			log_trace("screen_size = %u", data->screen_size);

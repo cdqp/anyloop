@@ -1,5 +1,6 @@
 #include "anyloop.h"
 #include "logging.h"
+#include "pretty.h"
 #include "logger.h"
 
 
@@ -20,8 +21,23 @@ int logger_init(struct aylp_device *self)
 int logger_process(struct aylp_device *self, struct aylp_state *state)
 {
 	UNUSED(self);
-	UNUSED(state);
-	log_info("logger processed");
+	switch (state->header.type) {
+	case AYLP_T_VECTOR:
+		log_info("Seeing vector of size %llu:", state->vector->size);
+		logn_info("");
+		pretty_vector(state->vector);
+		break;
+	case AYLP_T_MATRIX:
+		log_info("Seeing matrix of size %llux%llu:",
+			state->matrix->size1, state->matrix->size2
+		);
+		pretty_matrix(state->matrix);
+		break;
+	default:
+		log_info("Seeing type %hX but don't know how to print it",
+			state->header.type
+		);
+	}
 	return 0;
 }
 

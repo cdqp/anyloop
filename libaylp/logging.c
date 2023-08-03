@@ -59,8 +59,9 @@ int log_get_level(void)
 	return log_status.level;
 }
 
-void log_impl(int level, const char *file, int line, const char *fmt, ...)
-{
+void log_impl(int level, const char *file, int line, bool newline,
+	const char *fmt, ...
+){
 	if (level < log_status.level)
 		return;
 
@@ -99,7 +100,7 @@ void log_impl(int level, const char *file, int line, const char *fmt, ...)
 	va_list args;
 	va_start(args, fmt);
 	vfprintf(stderr, fmt, args);
-	putc('\n', stderr);
+	if (newline) putc('\n', stderr);
 	fflush(stderr);
 	va_end(args);
 }
