@@ -1,0 +1,40 @@
+{
+	"pipeline": [
+		{
+			"uri": "anyloop:test_source",
+			"params": {
+				"type": "vector",
+				"kind": "sine",
+				"size1": "2",
+				"size2": "2"
+			}
+		},
+		{
+			"uri": "anyloop:pid",
+			"params": {
+				"type": "vector",
+				"p": 0.1,
+				"i": 0.3,
+				"d": 0.1,
+				"clamp": 1.0
+			}
+		},
+		{
+			"uri": "anyloop:logger"
+		},
+		{
+			"uri": "anyloop:file_sink",
+			"params": {
+				"filename": "data.aylp"
+			}
+		},
+		{
+			"uri": "anyloop:delay",
+			"params": {
+				"s": 0,
+				"ns": 100000000
+			}
+		}
+	]
+}
+

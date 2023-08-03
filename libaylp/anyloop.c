@@ -17,7 +17,7 @@ const char *help_msg = "\nUsage: `anyloop [options] your_config_file.json`\n"
 	"-l/--loglevel <level>   set log level\n"
 	"-p/--profile            enable profiling\n"
 	"Allowed log levels: TRACE, DEBUG, INFO, WARN, ERROR, FATAL\n"
-	"Example: `anyloop -pl TRACE contrib/conf_example.json\n"
+	"Example: `anyloop -pl TRACE contrib/conf_example1.json\n"
 ;
 
 struct aylp_state state = {0};
