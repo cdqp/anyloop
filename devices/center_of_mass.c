@@ -34,7 +34,6 @@ void com_mat_uchar(gsl_matrix_uchar *src, double *dst)
 	// set final values, scaling from 0:size-1 (given by y/s or x/s) to -1:1
 	dst[0] = -1.0 + 2*y/(s*(src->size1-1));
 	dst[1] = -1.0 + 2*x/(s*(src->size2-1));
-	//log_debug("%F,%F", dst[0], dst[1]);
 }
 
 
@@ -161,8 +160,7 @@ int center_of_mass_process(struct aylp_device *self, struct aylp_state *state)
 	size_t t = 0;
 	for (size_t i=0; i < y_subap_count; i++) {
 		for (size_t j=0; j < x_subap_count; j++) {
-			// set source data (if we switch to matrix input, this
-			// is a simple submatrix call)
+			// set source data
 			data->subaps[t] = gsl_matrix_uchar_submatrix(
 				state->matrix_uchar,
 				i * data->region_height,
@@ -182,7 +180,7 @@ int center_of_mass_process(struct aylp_device *self, struct aylp_state *state)
 		}
 	}
 	// wait for threads to finish
-	while (!is_empty(&data->queue)) {
+	while (data->queue.tasks_processing) {
 		sched_yield();	// (is there a better function to call?)
 	}
 	// zero-copy update of pipeline state

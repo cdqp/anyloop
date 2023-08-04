@@ -22,8 +22,10 @@ void task_enqueue(struct aylp_queue *queue, struct aylp_task *task)
 	{
 		// add this task as oldest if there is no oldest task
 		if (!queue->oldest_task) queue->oldest_task = task;
-		// make the old newest_task point to this one as the next task
-		if (queue->newest_task) queue->newest_task->next_task = task;
+		// make the old newest_task point to this one as the next task,
+		// as long as it's not the same as the current task
+		if (queue->newest_task && queue->newest_task != task)
+			queue->newest_task->next_task = task;
 		// make the new newest_task this task
 		queue->newest_task = task;
 	}
@@ -45,7 +47,7 @@ struct aylp_task *task_dequeue(struct aylp_queue *queue)
 	// mutex grabbed
 	{
 		// if queue is empty, wait for a task
-		while (is_empty(queue)) {
+		while (!queue->oldest_task) {
 			err = pthread_cond_wait(&queue->ready, &queue->mutex);
 			if (err) throw(err);
 			if (queue->exit) {
@@ -55,9 +57,12 @@ struct aylp_task *task_dequeue(struct aylp_queue *queue)
 				return 0;
 			}
 		}
-		// grab oldest task
+		// grab oldest task and remove it from the queue
 		ret = queue->oldest_task;
 		queue->oldest_task = ret->next_task;
+		// can technically overflow at SIZE_MAX; but is that really
+		// worth checking?
+		queue->tasks_processing += 1;
 	}
 	// release mutex
 	err = pthread_mutex_unlock(&queue->mutex);
@@ -73,6 +78,7 @@ void *task_runner(void *queue)
 		struct aylp_task *task = task_dequeue(q);
 		if (q->exit) return 0;
 		task->func(task->src, task->dst);
+		q->tasks_processing -= 1;
 	}
 	return 0;
 }
