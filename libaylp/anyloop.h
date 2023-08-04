@@ -10,9 +10,11 @@
 #include <gsl/gsl_matrix.h>
 #include <json-c/json.h>
 
-// Stop clang from complaining about json_object_object_foreach() (clang
-// recognizes #pragma GCC too).
-#pragma GCC diagnostic ignored "-Wgnu-statement-expression-from-macro-expansion"
+// Stop clang from complaining about json_object_object_foreach()
+#ifdef __clang__
+#pragma clang diagnostic ignored \
+	"-Wgnu-statement-expression-from-macro-expansion"
+#endif
 
 // So as to not shoot ourselves in the foot when compiling for different
 // platforms, we need to specify that certain types are the right size.
