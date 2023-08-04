@@ -136,6 +136,13 @@ int center_of_mass_process(struct aylp_device *self, struct aylp_state *state)
 	// calculating on one subaperture, and we should be creating tasks that
 	// process more than one subaperture at a time.
 	size_t n_tasks = y_subap_count * x_subap_count;
+	if (!n_tasks) {
+		log_error("Refusing to process zero subapertures; "
+			"region size is %llu by %llu but image is %llu by %llu",
+			data->region_height, data->region_width, max_y, max_x
+		);
+		return -1;
+	}
 	// It's unfortunately quite ugly that we malloc here, but it's the
 	// simplest fast solution I can think of to the issue of not knowing the
 	// size of state->matrix_uchar when init() is run. Remember that `data`

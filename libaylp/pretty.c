@@ -5,6 +5,10 @@
 
 void pretty_vector(gsl_vector *v)
 {
+	if (!v->size) {
+		fprintf(stderr, "(refusing to print vector of size 0)\n");
+		return;
+	}
 	fputc('[', stderr);
 	size_t i;
 	for (i = 0; i < v->size-1; i++) {
@@ -19,6 +23,10 @@ void pretty_vector(gsl_vector *v)
 
 void pretty_matrix(gsl_matrix *m)
 {
+	if (!m->size1 || !m->size2) {
+		fprintf(stderr, "(refusing to print matrix of size 0 by 0)\n");
+		return;
+	}
 	fputs("[\n", stderr);
 	size_t y, x;
 	for (y = 0; y < m->size1; y++) {
