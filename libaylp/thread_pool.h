@@ -15,9 +15,9 @@ struct aylp_task {
 
 /** Queue object for thread pool.
 * The managing process should use task_enqueue and task_dequeue to add and
-* remove tasks to this queue, and should use check tasks_processing to decide if
-* all tasks are done in the queue. The process should also call shut_queue to
-* make all threads waiting on the queue to exit. */
+* remove tasks to this queue, and should check if tasks_processing is zero to
+* decide if all tasks are done in the queue. The process should also call
+* shut_queue to make all threads waiting on the queue to exit. */
 struct aylp_queue {
 	// mutex for queue writes to prevent race conditions
 	pthread_mutex_t mutex;
