@@ -33,6 +33,12 @@ int logger_process(struct aylp_device *self, struct aylp_state *state)
 		);
 		pretty_matrix(state->matrix);
 		break;
+	case AYLP_T_MATRIX_UCHAR:
+		log_info("Seeing matrix of size %llux%llu:",
+			state->matrix_uchar->size1, state->matrix_uchar->size2
+		);
+		pretty_matrix_uchar(state->matrix_uchar);
+		break;
 	default:
 		log_info("Seeing type %hX but don't know how to print it",
 			state->header.type

@@ -43,3 +43,25 @@ void pretty_matrix(gsl_matrix *m)
 	fputs("]\n", stderr);
 }
 
+void pretty_matrix_uchar(gsl_matrix_uchar *m)
+{
+	if (!m->size1 || !m->size2) {
+		fprintf(stderr,
+			"(refusing to print matrix with null width or height)\n"
+		);
+		return;
+	}
+	fputs("[\n", stderr);
+	size_t y, x;
+	for (y = 0; y < m->size1; y++) {
+		fputs("  ", stderr);
+		for (x = 0; x < m->size2; x++) {
+			fprintf(stderr, "%hhX ",
+				m->data[y * m->tda + x]
+			);
+		}
+		fputs("\n", stderr);
+	}
+	fputs("]\n", stderr);
+}
+

@@ -1,4 +1,5 @@
 #include <math.h>
+#include <limits.h>
 
 #include "anyloop.h"
 #include "logging.h"
@@ -32,6 +33,8 @@ int test_source_init(struct aylp_device *self)
 				data->type = AYLP_T_VECTOR;
 			else if (!strcmp(s, "matrix"))
 				data->type = AYLP_T_MATRIX;
+			else if (!strcmp(s, "matrix_uchar"))
+				data->type = AYLP_T_MATRIX_UCHAR;
 			else log_error("Unrecognized type: %s", s);
 			log_trace("type = %s (0x%X)", s, data->type);
 		} else if (!strcmp(key, "kind")) {
@@ -66,13 +69,19 @@ int test_source_init(struct aylp_device *self)
 	case AYLP_T_MATRIX:
 		data->matrix = gsl_matrix_alloc(data->size1, data->size2);
 		break;
+	case AYLP_T_MATRIX_UCHAR:
+		data->matrix_uchar = gsl_matrix_uchar_alloc(
+			data->size1, data->size2
+		);
+		break;
 	}
 
 	// set types and units
 	self->type_in = AYLP_T_ANY;
 	self->units_in = AYLP_U_ANY;
 	self->type_out = data->type;
-	self->units_out = AYLP_U_MINMAX;
+	if (data->type == AYLP_T_MATRIX_UCHAR) self->units_out = AYLP_U_COUNTS;
+	else self->units_out = AYLP_U_MINMAX;
 	return 0;
 }
 
@@ -103,6 +112,15 @@ int test_source_process(struct aylp_device *self, struct aylp_state *state)
 	case AYLP_T_MATRIX:
 		gsl_matrix_set_all(data->matrix, val);
 		state->matrix = data->matrix;
+		state->header.type = self->type_out;
+		state->header.log_dim.y = data->matrix->size1;
+		state->header.log_dim.x = data->matrix->size2;
+		break;
+	case AYLP_T_MATRIX_UCHAR:
+		gsl_matrix_uchar_set_all(data->matrix_uchar,
+			(val+1)/2 * UCHAR_MAX
+		);
+		state->matrix_uchar = data->matrix_uchar;
 		state->header.type = self->type_out;
 		state->header.log_dim.y = data->matrix->size1;
 		state->header.log_dim.x = data->matrix->size2;

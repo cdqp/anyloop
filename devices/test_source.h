@@ -4,7 +4,7 @@
 #include "anyloop.h"
 
 struct aylp_test_source_data {
-	// param type in ["vector", "matrix"]
+	// param type in ["vector", "matrix", "matrix_uchar"]
 	aylp_type type;
 	// param kind in ["noise", "sine"]
 	unsigned kind;
@@ -12,6 +12,7 @@ struct aylp_test_source_data {
 	union {
 		gsl_vector *vector;
 		gsl_matrix *matrix;
+		gsl_matrix_uchar *matrix_uchar;
 	};
 	// size of vector or height of matrix
 	size_t size1;

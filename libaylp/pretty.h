@@ -7,6 +7,7 @@
 // pretty-print gsl types
 void pretty_vector(gsl_vector *v);
 void pretty_matrix(gsl_matrix *m);
+void pretty_matrix_uchar(gsl_matrix_uchar *m);
 
 #endif
 
