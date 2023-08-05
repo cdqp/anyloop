@@ -60,8 +60,6 @@ void com_mat_uchar(gsl_matrix_uchar *src, double *dst)
 int center_of_mass_init(struct aylp_device *self)
 {
 	int err;
-	self->process = &center_of_mass_process;
-	self->close = &center_of_mass_close;
 	self->device_data = xcalloc(1, sizeof(struct aylp_center_of_mass_data));
 	struct aylp_center_of_mass_data *data = self->device_data;
 
@@ -101,18 +99,28 @@ int center_of_mass_init(struct aylp_device *self)
 		return -1;
 	}
 
-	// start threads
-	data->threads = xmalloc(data->thread_count * sizeof(pthread_t));
-	for (size_t t = 0; t < data->thread_count; t++) {
-		err = pthread_create(&data->threads[t],
-			0, task_runner, &data->queue
-		);
-		if (err) {
-			log_error("Couldn't create pthread: %s", strerror(err));
-			return -1;
+	if (data->thread_count > 1) {
+		// start threads
+		data->threads = xmalloc(data->thread_count * sizeof(pthread_t));
+		for (size_t t = 0; t < data->thread_count; t++) {
+			err = pthread_create(&data->threads[t],
+				0, task_runner, &data->queue
+			);
+			if (err) {
+				log_error("Couldn't create pthread: %s",
+					strerror(err)
+				);
+				return -1;
+			}
 		}
+		log_info("Started %llu threads", data->thread_count);
+		self->process = &center_of_mass_process_threaded;
+		self->close = &center_of_mass_close_threaded;
+	} else {
+		// no threading
+		self->process = &center_of_mass_process;
+		self->close = &center_of_mass_close;
 	}
-	log_info("Started %llu threads", data->thread_count);
 
 	// set types and units
 	self->type_in = AYLP_T_MATRIX_UCHAR;
@@ -124,6 +132,72 @@ int center_of_mass_init(struct aylp_device *self)
 
 
 int center_of_mass_process(struct aylp_device *self, struct aylp_state *state)
+{
+	struct aylp_center_of_mass_data *data = self->device_data;
+	size_t max_y = state->matrix_uchar->size1;
+	size_t max_x = state->matrix_uchar->size2;
+	size_t y_subap_count = max_y / data->region_height;
+	size_t x_subap_count = max_x / data->region_width;
+	size_t subap_count = y_subap_count * x_subap_count;
+	if (!subap_count) {
+		log_error("Refusing to process zero subapertures; "
+			"region size is %llu by %llu but image is %llu by %llu",
+			data->region_height, data->region_width, max_y, max_x
+		);
+		return -1;
+	}
+	// allocate the com vector if needed
+	if (!data->com || data->com->size < subap_count*2) {
+		xfree_type(gsl_vector, data->com);
+		data->com = xmalloc_type(gsl_vector, subap_count*2);
+	}
+
+	size_t n = 0;
+	for (size_t i=0; i < y_subap_count; i++) {
+		for (size_t j=0; j < x_subap_count; j++) {
+			double y = 0.0, x = 0.0, s = 0.0;
+			// inlined version of com_mat_uchar basically
+			for (size_t l=0; l < data->region_height; l++) {
+				for (size_t m=0; m < data->region_width; m++) {
+					unsigned char el;
+					el = state->matrix_uchar->data[
+						(i*data->region_height + l)
+						* state->matrix_uchar->tda
+						+ j*data->region_width + m
+					];
+					y += l*el;
+					x += m*el;
+					s += el;
+				}
+			}
+			data->com->data[2*n] = -1.0
+				+ 2*y/(s*(data->region_height-1));
+			data->com->data[2*n+1] = -1.0
+				+ 2*x/(s*(data->region_width-1));
+		}
+	}
+
+	// zero-copy update of pipeline state
+	state->vector = data->com;
+	// housekeeping on the header
+	state->header.type = self->type_out;
+	state->header.units = self->units_out;
+	state->header.log_dim.y = data->com->size;
+	state->header.log_dim.x = 1;
+	return 0;
+}
+
+
+int center_of_mass_close(struct aylp_device *self)
+{
+	xfree(self->device_data);
+	return 0;
+}
+
+
+int center_of_mass_process_threaded(
+	struct aylp_device *self, struct aylp_state *state
+)
 {
 	struct aylp_center_of_mass_data *data = self->device_data;
 	size_t max_y = state->matrix_uchar->size1;
@@ -201,7 +275,7 @@ int center_of_mass_process(struct aylp_device *self, struct aylp_state *state)
 }
 
 
-int center_of_mass_close(struct aylp_device *self)
+int center_of_mass_close_threaded(struct aylp_device *self)
 {
 	struct aylp_center_of_mass_data *data = self->device_data;
 	shut_queue(&data->queue);
@@ -210,7 +284,7 @@ int center_of_mass_close(struct aylp_device *self)
 	}
 	xfree(data->threads);
 	xfree(data->tasks);
-	xfree(data);
+	xfree(self->device_data);
 	return 0;
 }
 

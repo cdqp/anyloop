@@ -48,9 +48,14 @@ int center_of_mass_init(struct aylp_device *self);
 * input is of type AYLP_T_MATRIX_UCHAR, and is written in order of increasing x
 * coordinate, then increasing y coordinate. */
 int center_of_mass_process(struct aylp_device *self, struct aylp_state *state);
+/** Multithreaded version of process function. */
+int center_of_mass_process_threaded(
+	struct aylp_device *self, struct aylp_state *state
+);
 
 // close center_of_mass device when loop exits
 int center_of_mass_close(struct aylp_device *self);
+int center_of_mass_close_threaded(struct aylp_device *self);
 
 #endif
 
