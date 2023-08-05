@@ -78,9 +78,11 @@ static bool check_opt(char **arg, char opt_short, char *opt_long,
 		if (chars_remaining) *chars_remaining -= 1;
 	}
 	// okay, it's a match; grab the value if needed
-	if (value) *value = arg[1];
-	// set the value to null so we don't try to parse it as an option
-	arg[1] = 0;
+	if (value) {
+		*value = arg[1];
+		// set the value to null so we don't try to parse it again
+		arg[1] = 0;
+	}
 	return true;
 }
 

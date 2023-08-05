@@ -24,7 +24,9 @@ void pretty_vector(gsl_vector *v)
 void pretty_matrix(gsl_matrix *m)
 {
 	if (!m->size1 || !m->size2) {
-		fprintf(stderr, "(refusing to print matrix of size 0 by 0)\n");
+		fprintf(stderr,
+			"(refusing to print matrix with null width or height)\n"
+		);
 		return;
 	}
 	fputs("[\n", stderr);
