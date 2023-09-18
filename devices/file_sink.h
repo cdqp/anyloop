@@ -8,6 +8,8 @@
 struct aylp_file_sink_data {
 	// file to sink data to
 	FILE *fp;
+	// whether or not to flush the file every process()
+	json_bool flush;
 	// gsl_block_uchar that we will copy pointer to data to
 	gsl_block_uchar bytes;
 };

@@ -1,0 +1,27 @@
+{
+	"pipeline": [
+	{
+		"uri": "anyloop:test_source",
+			"params": {
+				"type": "matrix_uchar",
+				"kind": "sine",
+				"size1": 256,
+				"size2": 256
+			}
+	},
+	{
+		"uri": "anyloop:center_of_mass",
+		"params": {
+			"region_height": 8,
+			"region_width": 8,
+			"thread_count": 1
+		}
+	},
+	{
+		"uri": "anyloop:stop_after_count",
+		"params": {
+			"count": 4000
+		}
+	}
+	]
+}

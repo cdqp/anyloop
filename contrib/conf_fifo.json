@@ -1,0 +1,30 @@
+{
+	"pipeline": [
+		{
+			"uri": "anyloop:vonkarman_stream",
+			"params": {
+				"L0": 4.0,
+				"r0": 0.02,
+				"pitch": 0.025,
+				"screen_size": 2048,
+				"step_x": 1,
+				"step_y": 1
+			}
+		},
+		{
+			"uri": "anyloop:delay",
+			"params": {
+				"s": 0,
+				"ns": 200000000
+			}
+		},
+		{
+			"uri": "anyloop:file_sink",
+			"params": {
+				"filename": "/tmp/aylp.fifo",
+				"flush": true
+			}
+		}
+	]
+}
+

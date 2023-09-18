@@ -25,6 +25,9 @@ int file_sink_init(struct aylp_device *self)
 		} else if (!strcmp(key, "filename")) {
 			fn = json_object_get_string(val);
 			log_trace("filename = %s", fn);
+		} else if (!strcmp(key, "flush")) {
+			data->flush = json_object_get_boolean(val);
+			log_trace("flush = %d", data->flush);
 		} else {
 			log_warn("Unknown parameter \"%s\"", key);
 		}
@@ -64,6 +67,9 @@ int file_sink_process(struct aylp_device *self, struct aylp_state *state)
 	}
 	if (needs_free) {
 		xfree(data->bytes.data);
+	}
+	if (data->flush) {
+		fflush(data->fp);
 	}
 	return 0;
 }
