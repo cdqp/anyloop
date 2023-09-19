@@ -6,7 +6,9 @@ using Plots; gr()
 
 fifo_path = "/tmp/aylp.fifo"
 
-rm(fifo_path)
+if ispath(fifo_path)
+    rm(fifo_path)
+end
 run(`mkfifo $(fifo_path)`)
 
 if !isfifo(fifo_path)
@@ -19,7 +21,6 @@ println("pipe opened; waiting for data ...")
 
 while true
     data = read(fifo, AYLP_Data)
-    println(data)
     display(heatmap(data.data))
 end
 
