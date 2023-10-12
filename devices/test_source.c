@@ -7,7 +7,7 @@
 #include "xalloc.h"
 
 
-enum {KIND_NOISE, KIND_SINE};
+enum {KIND_CONSTANT=1, KIND_SINE=2};
 
 int test_source_init(struct aylp_device *self)
 {
@@ -17,7 +17,9 @@ int test_source_init(struct aylp_device *self)
 	struct aylp_test_source_data *data = self->device_data;
 
 	// set defaults
-	data->freq = 0.1;
+	data->frequency = 0.1;
+	data->amplitude = 1.0;
+	data->offset = 0.0;
 
 	// parse parameters
 	if (!self->params) {
@@ -39,7 +41,8 @@ int test_source_init(struct aylp_device *self)
 			log_trace("type = %s (0x%X)", s, data->type);
 		} else if (!strcmp(key, "kind")) {
 			const char *s = json_object_get_string(val);
-			if (!strcmp(s, "noise")) data->kind = KIND_NOISE;
+			// TODO: add KIND_NOISE?
+			if (!strcmp(s, "constant")) data->kind = KIND_CONSTANT;
 			else if (!strcmp(s, "sine")) data->kind = KIND_SINE;
 			else log_error("Unrecognized kind: %s", s);
 			log_trace("kind = %s (0x%X)", s, data->kind);
@@ -50,16 +53,40 @@ int test_source_init(struct aylp_device *self)
 			data->size2 = json_object_get_uint64(val);
 			log_trace("size2 = %llu", data->size2);
 		} else if (!strcmp(key, "frequency")) {
-			data->freq = json_object_get_double(val);
-			log_trace("frequency = %E", data->freq);
+			data->frequency = json_object_get_double(val);
+			log_trace("frequency = %E", data->frequency);
+		} else if (!strcmp(key, "amplitude")) {
+			data->amplitude = json_object_get_double(val);
+			log_trace("amplitude = %E", data->amplitude);
+		} else if (!strcmp(key, "offset")) {
+			data->offset = json_object_get_double(val);
+			log_trace("offset = %E", data->offset);
 		} else {
 			log_warn("Unknown parameter \"%s\"", key);
 		}
 	}
 	// make sure we didn't miss any params
-	if (!data->type || !data->kind) {
-		log_error("You must provide valid type and kind params.");
+	if (!data->type) {
+		log_error("You must provide a valid type param.");
 		return -1;
+	}
+	if (!data->kind) {
+		log_error("You must provide a valid kind param.");
+		return -1;
+	}
+	if (!data->size1) {
+		log_error("You must provide a valid size1 param.");
+		return -1;
+	}
+	if (data->type & (AYLP_T_MATRIX|AYLP_T_MATRIX_UCHAR) && !data->size2) {
+		log_error("You must provide a valid size2 param.");
+		return -1;
+	}
+	// warn about clipping
+	if (fabs(data->offset) + fabs(data->amplitude) > 1) {
+		log_warn("Note that output will be clipped to ±1.0, "
+			"or 0:255 for uchar types"
+		);
 	}
 
 	switch (data->type) {
@@ -82,6 +109,7 @@ int test_source_init(struct aylp_device *self)
 	self->type_out = data->type;
 	if (data->type == AYLP_T_MATRIX_UCHAR) self->units_out = AYLP_U_COUNTS;
 	else self->units_out = AYLP_U_MINMAX;
+
 	return 0;
 }
 
@@ -92,18 +120,21 @@ int test_source_process(struct aylp_device *self, struct aylp_state *state)
 
 	double val = 0;
 	switch (data->kind) {
-	case KIND_NOISE:
-		log_warn("Noise generation not implemented yet.");	// TODO
+	case KIND_CONSTANT:
+		val = data->offset;
 		break;
 	case KIND_SINE:
-		val = sin(data->freq * data->acc);
+		val = data->offset + data->amplitude * sin(
+			data->frequency * data->acc
+		);
 		break;
 	}
+	if (val > 1) val = 1;
+	else if (val < -1) val = -1;
 	data->acc += 1;
 
 	switch (data->type) {
 	case AYLP_T_VECTOR:
-		// TODO: move the data->kind switch here instead of set_all
 		gsl_vector_set_all(data->vector, val);
 		state->vector = data->vector;
 		state->header.log_dim.y = data->vector->size;

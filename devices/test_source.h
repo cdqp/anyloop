@@ -4,9 +4,9 @@
 #include "anyloop.h"
 
 struct aylp_test_source_data {
-	// param type in ["vector", "matrix", "matrix_uchar"]
+	// param: one of ["vector", "matrix", "matrix_uchar"]
 	aylp_type type;
-	// param kind in ["noise", "sine"]
+	// param: one of ["constant", "sine"]
 	unsigned kind;
 	// to put in pipeline
 	union {
@@ -14,12 +14,16 @@ struct aylp_test_source_data {
 		gsl_matrix *matrix;
 		gsl_matrix_uchar *matrix_uchar;
 	};
-	// size of vector or height of matrix
+	// param: size of vector or height of matrix
 	size_t size1;
-	// width of matrix, if needed
+	// param: width of matrix, if needed
 	size_t size2;
-	// frequency of sine oscillation in radians per process() call
-	double freq;
+	// param: frequency of sine oscillation in radians per process() call
+	double frequency;
+	// param: amplitude of sine wave; note that output will be clipped to ±1
+	double amplitude;
+	// param: offset of sine wave or value of constant
+	double offset;
 	// accumulator
 	size_t acc;
 };
