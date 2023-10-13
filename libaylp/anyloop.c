@@ -188,7 +188,7 @@ int main(int argc, char **argv)
 		);
 		// typecheck fails if any of the bits set in type_cur are not
 		// set in type_in
-		if ((d.type_in ^ type_cur) & type_cur) {
+		if (type_cur & ~d.type_in) {
 			log_fatal("Device %s with input type 0x%hX "
 				"is incompatible with previous type 0x%hX",
 				d.uri, d.type_in, type_cur
@@ -198,7 +198,7 @@ int main(int argc, char **argv)
 		log_trace("unit check: prev=0x%hX, in=0x%hX, out=0x%hX",
 			units_cur, d.units_in, d.units_out
 		);
-		if (!(d.units_in & units_cur)) {
+		if (units_cur & ~d.units_in) {
 			log_fatal("Device %s with input units 0x%hX "
 				"is incompatible with previous units 0x%hX",
 				d.uri, d.units_in, units_cur
