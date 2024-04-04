@@ -4,26 +4,37 @@
 #include "anyloop.h"
 
 struct aylp_test_source_data {
-	// param: one of ["vector", "matrix", "matrix_uchar"]
+	/** Param: one of ["vector", "matrix", "matrix_uchar"]. */
 	aylp_type type;
-	// param: one of ["constant", "sine"]
+
+	/** Param: one of ["constant", "sine", "matrix_uchar"]. */
 	unsigned kind;
+
+	/** Param: size of vector or height of matrix. */
+	size_t size1;
+
+	/** Param: width of matrix, if applicable. */
+	size_t size2;
+
+	/** Param: frequency of sine oscillation, if applicable.
+	* Units are radians per process() call */
+	double frequency;
+
+	/** Param: amplitude of sine wave, if applicable.
+	* Note that for "vector" and "matrix" types, this device outputs units
+	* of AYLP_U_MINMAX; the output will be clipped to ±1.0. For the
+	* "matrix_uchar" type, the output is instead clipped between 0:255. */
+	double amplitude;
+
+	/** Param: offset of sine wave or value of constant. */
+	double offset;
+
 	// to put in pipeline
 	union {
 		gsl_vector *vector;
 		gsl_matrix *matrix;
 		gsl_matrix_uchar *matrix_uchar;
 	};
-	// param: size of vector or height of matrix
-	size_t size1;
-	// param: width of matrix, if needed
-	size_t size2;
-	// param: frequency of sine oscillation in radians per process() call
-	double frequency;
-	// param: amplitude of sine wave; note that output will be clipped to ±1
-	double amplitude;
-	// param: offset of sine wave or value of constant
-	double offset;
 	// accumulator
 	size_t acc;
 };

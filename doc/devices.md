@@ -13,12 +13,14 @@ Some ground rules:
 
 1. Devices must free any memory they allocate.
 2. Devices must not free any memory they didn't allocate.
-3. Devices are to maintain copies of any memory they allocate. `state->matrix`
-(for example) should *never* be the only pointer to its data; otherwise, that's
-just begging for a memory leak.
+3. Devices must maintain copies of any memory they allocate. `state->matrix`
+   (for example) should *never* be the only pointer to its data; otherwise,
+   that's just begging for a memory leak.
 4. If devices fail to do their job, they must return a nonzero error code from
-`process()`. This is especially important if the device was supposed to change
-the pipeline type.
+   `process()`. This is especially important if the device was supposed to
+   change the pipeline type.
+5. Devices should self-document their parameters and accepted/outputted
+   `aylp_type`s and `aylp_units` in their header files.
 
 
 Built-in devices

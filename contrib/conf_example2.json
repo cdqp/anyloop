@@ -5,8 +5,7 @@
 			"params": {
 				"type": "vector",
 				"kind": "sine",
-				"size1": "2",
-				"size2": "2"
+				"size1": "2"
 			}
 		},
 		{

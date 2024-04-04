@@ -40,9 +40,11 @@ int logger_process(struct aylp_device *self, struct aylp_state *state)
 		pretty_matrix_uchar(state->matrix_uchar);
 		break;
 	default:
-		log_info("Seeing type %hX but don't know how to print it",
+		log_warn("Seeing type %hX but don't know how to print it",
 			state->header.type
 		);
+		if (!state->header.type)
+			log_info("Perhaps there's no data in the pipeline?");
 	}
 	return 0;
 }
