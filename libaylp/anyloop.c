@@ -22,7 +22,7 @@ const char *help_msg = "\nUsage: `anyloop [options] your_config_file.json`\n"
 ;
 
 struct aylp_state state = {0};
-struct aylp_conf conf;
+struct aylp_conf conf = {0};
 
 static bool sigint_received = false;
 
@@ -144,6 +144,11 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	} else {
 		conf = read_config(argv[argc-1]);
+		log_info("Seeing %d devices.", conf.n_devices);
+		if (!conf.n_devices) {
+			log_fatal("Refusing to continue with zero devices.");
+			return EXIT_FAILURE;
+		}
 	}
 
 	struct sigaction signal_handler;

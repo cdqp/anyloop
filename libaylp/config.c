@@ -8,7 +8,7 @@
 
 struct aylp_conf read_config(const char *file)
 {
-	struct aylp_conf ret;
+	struct aylp_conf ret = {0};
 
 	log_info("Opening config file \"%s\"", file);
 	struct json_object *jobj = json_object_from_file(file);
