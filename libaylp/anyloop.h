@@ -125,7 +125,9 @@ struct aylp_header {
 		uint64_t x;
 	} log_dim;
 
-	/** Physical distance between successive logical rows and columns. */
+	/** Physical distance between successive logical rows and columns.
+	* (In units of meters.)
+	*/
 	struct {
 		double y;
 		double x;
