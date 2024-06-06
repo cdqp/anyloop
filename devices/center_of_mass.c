@@ -39,6 +39,9 @@ void com_mat_uchar(gsl_matrix_uchar *src, double *dst)
 
 // This is nice and fast, but doesn't work for us, because we want to find the
 // com of a slice of non-contiguous memory....
+// TODO: actually, it seems like contiguous matrices are one of the most likely
+// scenarios in practice, e.g. if we're reading from a camera. Consider
+// switching to this at runtime!
 // /** Hardcoded 8x8 center of mass task so the compiler can optimize it.
 // * Will look at 64 uchars at src, and write the output as two doubles in dst
 // * in (y,x) order. */
@@ -139,7 +142,7 @@ int center_of_mass_process(struct aylp_device *self, struct aylp_state *state)
 	size_t y_subap_count = max_y / data->region_height;
 	size_t x_subap_count = max_x / data->region_width;
 	size_t subap_count = y_subap_count * x_subap_count;
-	if (!subap_count) {
+	if (UNLIKELY(!subap_count)) {
 		log_error("Refusing to process zero subapertures; "
 			"region size is %llu by %llu but image is %llu by %llu",
 			data->region_height, data->region_width, max_y, max_x
@@ -147,7 +150,7 @@ int center_of_mass_process(struct aylp_device *self, struct aylp_state *state)
 		return -1;
 	}
 	// allocate the com vector if needed
-	if (!data->com || data->com->size < subap_count*2) {
+	if (UNLIKELY(!data->com || data->com->size < subap_count*2)) {
 		xfree_type(gsl_vector, data->com);
 		data->com = xmalloc_type(gsl_vector, subap_count*2);
 	}
@@ -174,6 +177,7 @@ int center_of_mass_process(struct aylp_device *self, struct aylp_state *state)
 				+ 2*y/(s*(data->region_height-1));
 			data->com->data[2*n+1] = -1.0
 				+ 2*x/(s*(data->region_width-1));
+			n += 1;
 		}
 	}
 
