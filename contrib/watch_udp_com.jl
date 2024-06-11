@@ -41,7 +41,9 @@ for i in 1:10000
     @assert 2*L*M == length(data1.data)
     u = reshape(data1.data, (2,:))[1,:]
     v = reshape(data1.data, (2,:))[2,:]
-    display(quiver!(8*(m.-0.5), 8*(l.-0.5), quiver=(4*v,4*u), color=:magenta))
+    display(quiver!(
+        8*(m.-0.5).+0.5, 8*(l.-0.5).+0.5, quiver=(4*v,4*u), color=:magenta
+    ))
 end
 
 close(sock)
