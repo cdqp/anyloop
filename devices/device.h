@@ -6,6 +6,7 @@
 #include "devices/file_sink.h"
 #include "devices/logger.h"
 #include "devices/pid.h"
+#include "devices/poke.h"
 #include "devices/stop_after_count.h"
 #include "devices/test_source.h"
 #include "devices/udp_sink.h"
@@ -20,6 +21,7 @@ static const struct {
 	{ "anyloop:file_sink", file_sink_init },
 	{ "anyloop:logger", logger_init },
 	{ "anyloop:pid", pid_init },
+	{ "anyloop:poke", poke_init },
 	{ "anyloop:stop_after_count", stop_after_count_init },
 	{ "anyloop:test_source", test_source_init },
 	{ "anyloop:udp_sink", udp_sink_init },
