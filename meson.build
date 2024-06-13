@@ -28,6 +28,7 @@ project_source_files = [
 	'devices/delay.c',
 	'devices/file_sink.c',
 	'devices/logger.c',
+	'devices/matmul.c',
 	'devices/pid.c',
 	'devices/poke.c',
 	'devices/stop_after_count.c',

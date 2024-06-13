@@ -5,6 +5,7 @@
 #include "devices/delay.h"
 #include "devices/file_sink.h"
 #include "devices/logger.h"
+#include "devices/matmul.h"
 #include "devices/pid.h"
 #include "devices/poke.h"
 #include "devices/stop_after_count.h"
@@ -20,6 +21,7 @@ static const struct {
 	{ "anyloop:delay", delay_init },
 	{ "anyloop:file_sink", file_sink_init },
 	{ "anyloop:logger", logger_init },
+	{ "anyloop:matmul", matmul_init },
 	{ "anyloop:pid", pid_init },
 	{ "anyloop:poke", poke_init },
 	{ "anyloop:stop_after_count", stop_after_count_init },
