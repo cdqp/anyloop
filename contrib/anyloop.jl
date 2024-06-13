@@ -55,14 +55,21 @@ function Base.read(io::IO, ::Type{AYLP_Data})
         for i in 1:size
             data[i] = read(io, Float64)
         end
-        return AYLP_Data(head, reshape(data, (head.log_dim_y, head.log_dim_x)))
+        return AYLP_Data(head,
+            # we have to do this tricky transpose of reshape() because anyloop
+            # uses row-major ordering, and julia uses column-major
+            Matrix{Float64}(reshape(data, (head.log_dim_x, head.log_dim_y))')
+        )
     elseif head.aylp_type in [1<<4, 1<<5]
         # block_uchar/matrix_uchar
         data = Vector{UInt8}(undef, size)
         for i in 1:size
             data[i] = read(io, UInt8)
         end
-        return AYLP_Data(head, reshape(data, (head.log_dim_y, head.log_dim_x)))
+        return AYLP_Data(head,
+            # same deal with column-major
+            Matrix{UInt8}(reshape(data, (head.log_dim_x, head.log_dim_y))')
+        )
     else
         throw(ArgumentError("unknown type $(head.aylp_type)"))
     end

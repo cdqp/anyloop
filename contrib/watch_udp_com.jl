@@ -36,9 +36,10 @@ for i in 1:10000
     data0 = read(IOBuffer(recv(sock0)), AYLP_Data)
     data1 = read(IOBuffer(recv(sock1)), AYLP_Data)
 
-    heatmap(data0.data', aspect_ratio=:equal, size=(800,800))
+    heatmap(data0.data, aspect_ratio=:equal, size=(800,800))
 
     @assert 2*L*M == length(data1.data)
+    # output from center_of_mass device is in order [y1,x1,y2,x2,...]
     u = reshape(data1.data, (2,:))[1,:]
     v = reshape(data1.data, (2,:))[2,:]
     display(quiver!(
