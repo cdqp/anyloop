@@ -2,7 +2,6 @@
 # just a rudimentary plotting script to view square matrices
 using ArgParse
 using Plots; gr()
-using FFTW
 
 argset = ArgParseSettings()
 @add_arg_table argset begin

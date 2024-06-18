@@ -189,15 +189,15 @@ int vonkarman_stream_init(struct aylp_device *self)
 		} else if (!strcmp(key, "screen_size")) {
 			data->screen_size = json_object_get_uint64(val);
 			log_trace("screen_size = %u", data->screen_size);
-		} else if (!strcmp(key, "start_y")) {
-			data->cur_y = json_object_get_uint64(val);
-			log_trace("start_y = %u", data->cur_y);
 		} else if (!strcmp(key, "win_height")) {
 			data->win_height = json_object_get_uint64(val);
 			log_trace("win_height = %u", data->win_height);
 		} else if (!strcmp(key, "win_width")) {
 			data->win_width = json_object_get_uint64(val);
 			log_trace("win_width = %u", data->win_width);
+		} else if (!strcmp(key, "start_y")) {
+			data->cur_y = json_object_get_uint64(val);
+			log_trace("start_y = %u", data->cur_y);
 		} else if (!strcmp(key, "start_x")) {
 			data->cur_x = json_object_get_uint64(val);
 			log_trace("start_x = %u", data->cur_x);

@@ -118,7 +118,6 @@ int matmul_init(struct aylp_device *self)
 }
 
 
-// TODO: test this
 int matmul_process_mm(struct aylp_device *self, struct aylp_state *state)
 {
 	struct aylp_matmul_data *data = self->device_data;
