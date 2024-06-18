@@ -11,16 +11,17 @@ See the `aylp_device` struct in `anyloop.h`. Devices have init and close
 functions that each run once, and a process function that runs once every loop.
 Some ground rules:
 
-1. Devices must free any memory they allocate.
-2. Devices must not free any memory they didn't allocate.
-3. Devices must maintain copies of any memory they allocate. `state->matrix`
-   (for example) should *never* be the only pointer to its data; otherwise,
-   that's just begging for a memory leak.
-4. If devices fail to do their job, they must return a nonzero error code from
-   `process()`. This is especially important if the device was supposed to
-   change the pipeline type.
-5. Devices should self-document their parameters and accepted/outputted
-   `aylp_type`s and `aylp_units` in their header files.
+ 1. Devices must free any memory they allocate.
+ 2. Devices must not free any memory they didn't allocate.
+ 3. Devices must maintain copies of any memory they allocate. `state->matrix`
+    (for example) should *never* be the only pointer to its data; otherwise,
+    that's just begging for a memory leak.
+ 4. If devices fail to do their job, they must return a nonzero error code from
+    `process()`. This is especially important if the device was supposed to
+    change the pipeline type.
+ 5. Devices should self-document their parameters and accepted/outputted
+   `aylp_type`s and `aylp_units`, either in their header files or in separate
+   documentation elsewhere.
 
 
 Built-in devices
@@ -38,13 +39,16 @@ To add a new built-in device:
  3. add the device's initialization function to the init map in `device.h`
  4. add the new files to meson.build
 
+Documentation for each built-in device is located under the
+[doc/devices](devices) directory of this repository.
+
 
 Plug-in devices
 ---------------
 
 Sometimes, due to licensing requirements or whatever, it may be convenient to
 use devices not in this repository. No problem! Use the `file` scheme
-with no authority (<https://www.rfc-editor.org/rfc/rfc8090.html>). For example,
+with no authority ([RFC 3986]). For example,
 to load a plug-in device at `/opt/foo/bar.so`, write the URI as
 `file:/opt/foo/bar.so`.
 
@@ -62,4 +66,8 @@ function named `blah_init`.
 
 This function can then attach whatever process() and close() functions it wishes
 to its own `aylp_device` struct.
+
+
+
+[RFC 3986]: https://datatracker.ietf.org/doc/html/rfc3986
 

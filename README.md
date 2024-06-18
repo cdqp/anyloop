@@ -14,6 +14,7 @@ Anyloop is subject to the terms of the Mozilla Public License, version 2.0. If a
 copy of the MPL was not distributed with this repository, you can obtain one at
 <http://mozilla.org/MPL/2.0/>.
 
+
 Installing
 ----------
 
@@ -43,10 +44,31 @@ meson compile -C build
 sudo meson install -C build
 ```
 
+
 Uninstalling
 ------------
 
 Soon, anyloop will at least be an AUR package so those using Archlinux can
 simply uninstall via pacman. If you installed with meson, manually wipe the
 `/opt/anyloop` directory and the binary at the path returned by `which anyloop`.
+
+
+How it works
+------------
+
+Inspired by multimedia frameworks like [PipeWire] and [GStreamer], anyloop
+implements a [pipeline]. Unlike those more complex frameworks, anyloop is much
+simpler and more generic. *Devices* (elements of the pipeline) are arranged and
+processed linearly, each of them reading and writing to the data currently in
+the pipeline *state*.
+
+See [conf.md] for documentation on how to configure anyloop's pipeline, and
+[devices.md] for information on how devices work.
+
+
+[PipeWire]: https://pipewire.org
+[GStreamer]: https://gstreamer.freedesktop.org
+[pipeline]: https://en.wikipedia.org/wiki/Pipeline_(computing)
+[conf.md]: doc/conf.md
+[devices.md]: doc/devices.md
 
