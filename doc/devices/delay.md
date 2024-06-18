@@ -1,5 +1,5 @@
-aylp:delay
-==========
+anyloop:delay
+=============
 
 Types and units: `[T_ANY, U_ANY] -> [T_UNCHANGED, U_UNCHANGED]`.
 

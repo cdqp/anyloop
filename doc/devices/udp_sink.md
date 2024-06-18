@@ -1,5 +1,5 @@
-aylp:udp_sink
-=============
+anyloop:udp_sink
+================
 
 Types and units: `[T_ANY, U_ANY] -> [T_UNCHANGED, U_UNCHANGED]`.
 

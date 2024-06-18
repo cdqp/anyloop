@@ -1,5 +1,5 @@
-aylp:pid
-========
+anyloop:pid
+===========
 
 Types and units: `[T_VECTOR|T_MATRIX, U_ANY] -> [T_UNCHANGED, U_UNCHANGED]`.
 

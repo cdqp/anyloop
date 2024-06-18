@@ -1,5 +1,5 @@
-aylp:logger
-===========
+anyloop:logger
+==============
 
 Types and units: `[T_ANY, U_ANY] -> [T_UNCHANGED, U_UNCHANGED]`.
 

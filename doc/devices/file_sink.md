@@ -1,5 +1,5 @@
-aylp:file_sink
-==============
+anyloop:file_sink
+=================
 
 Types and units: `[T_ANY, U_ANY] -> [T_UNCHANGED, U_UNCHANGED]`.
 

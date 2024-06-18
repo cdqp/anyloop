@@ -1,5 +1,5 @@
-aylp:stop_after_count
-=====================
+anyloop:stop_after_count
+========================
 
 Types and units: `[T_ANY, U_ANY] -> [T_UNCHANGED, U_UNCHANGED]`.
 

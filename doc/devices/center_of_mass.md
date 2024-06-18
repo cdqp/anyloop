@@ -1,5 +1,5 @@
-aylp:center_of_mass
-===================
+anyloop:center_of_mass
+======================
 
 Types and units: `[T_MATRIX_UCHAR, U_ANY] -> [T_VECTOR, U_MINMAX]`.
 
