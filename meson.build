@@ -31,6 +31,7 @@ project_source_files = [
 	'devices/matmul.c',
 	'devices/pid.c',
 	'devices/poke.c',
+	'devices/remove_piston.c',
 	'devices/stop_after_count.c',
 	'devices/test_source.c',
 	'devices/udp_sink.c',

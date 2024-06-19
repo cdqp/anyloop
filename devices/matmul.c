@@ -108,6 +108,7 @@ int matmul_init(struct aylp_device *self)
 		log_error("BUG: self->type_in is wrong");
 		return -1;
 	}
+	self->close = &matmul_close;
 
 	// set types and units
 	self->units_in = AYLP_U_ANY;
