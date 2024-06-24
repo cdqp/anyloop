@@ -1,5 +1,5 @@
-anyloop:remove_piston
-=====================
+anyloop:remove\_piston
+======================
 
 Types and units: `[T_MATRIX, U_ANY] -> [T_UNCHANGED, U_UNCHANGED]`.
 
