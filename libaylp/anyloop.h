@@ -226,5 +226,17 @@ struct aylp_conf {
 };
 
 
+/** Convert a string to a type.
+ * @param type_name: the string holding the type name (e.g. "vector")
+ */
+aylp_type aylp_type_from_string(const char *type_name);
+
+
+/** Convert a type to its name as a string.
+ * @param type: the string holding the type name (e.g. "vector")
+ */
+const char *aylp_type_to_string(aylp_type type);
+
+
 #endif	// include guard
 

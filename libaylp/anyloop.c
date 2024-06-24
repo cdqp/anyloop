@@ -49,7 +49,41 @@ static void cleanup(void)
 }
 
 
-void handle_signal(int sig, siginfo_t *info, void *context)
+aylp_type aylp_type_from_string(const char *type_name)
+{
+	if (!strcasecmp(type_name, "none")) return AYLP_T_NONE;
+	if (!strcasecmp(type_name, "block")) return AYLP_T_BLOCK;
+	if (!strcasecmp(type_name, "vector")) return AYLP_T_VECTOR;
+	if (!strcasecmp(type_name, "matrix")) return AYLP_T_MATRIX;
+	if (!strcasecmp(type_name, "block_uchar")) return  AYLP_T_BLOCK_UCHAR;
+	if (!strcasecmp(type_name, "matrix_uchar")) return AYLP_T_MATRIX_UCHAR;
+
+	log_error("Couldn't parse type: %s", type_name);
+	return AYLP_T_NONE;
+}
+
+const char *aylp_type_to_string(aylp_type type)
+{
+	switch (type) {
+	case AYLP_T_BLOCK:
+		return "block";
+	case AYLP_T_VECTOR:
+		return "vector";
+	case AYLP_T_MATRIX:
+		return "matrix";
+	case AYLP_T_BLOCK_UCHAR:
+		return "block_uchar";
+	case AYLP_T_MATRIX_UCHAR:
+		return "matrix_uchar";
+	default:
+		log_error("Unknown type 0x%hhX", type);
+		return "NONE";
+	}
+}
+
+
+
+static void handle_signal(int sig, siginfo_t *info, void *context)
 {
 	UNUSED(info);
 	UNUSED(context);
@@ -188,24 +222,24 @@ int main(int argc, char **argv)
 	units_cur |= conf.devices[conf.n_devices-1].units_out;
 	for (size_t idx=0; idx<conf.n_devices; idx++) {
 		struct aylp_device d = conf.devices[idx];	// brevity
-		log_trace("type check: prev=0x%hX, in=0x%hX, out=0x%hX",
+		log_trace("type check: prev=0x%hhX, in=0x%hhX, out=0x%hhX",
 			type_cur, d.type_in, d.type_out
 		);
 		// typecheck fails if any of the bits set in type_cur are not
 		// set in type_in
 		if (type_cur & ~d.type_in) {
-			log_fatal("Device %s with input type 0x%hX "
-				"is incompatible with previous type 0x%hX",
+			log_fatal("Device %s with input type 0x%hhX "
+				"is incompatible with previous type 0x%hhX",
 				d.uri, d.type_in, type_cur
 			);
 			return EXIT_FAILURE;
 		}
-		log_trace("unit check: prev=0x%hX, in=0x%hX, out=0x%hX",
+		log_trace("unit check: prev=0x%hhX, in=0x%hhX, out=0x%hhX",
 			units_cur, d.units_in, d.units_out
 		);
 		if (units_cur & ~d.units_in) {
-			log_fatal("Device %s with input units 0x%hX "
-				"is incompatible with previous units 0x%hX",
+			log_fatal("Device %s with input units 0x%hhX "
+				"is incompatible with previous units 0x%hhX",
 				d.uri, d.units_in, units_cur
 			);
 			return EXIT_FAILURE;

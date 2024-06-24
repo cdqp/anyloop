@@ -24,6 +24,7 @@ project_source_files = [
 	'libaylp/xalloc.c',
 	'libaylp/profile.c',
 	'devices/center_of_mass.c',
+	'devices/clamp.c',
 	'devices/device.c',
 	'devices/delay.c',
 	'devices/file_sink.c',
