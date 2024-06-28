@@ -35,7 +35,7 @@ int pid_init(struct aylp_device *self)
 			else if (!strcmp(s, "matrix"))
 				data->type = AYLP_T_MATRIX;
 			else log_error("Unrecognized type: %s", s);
-			log_trace("type = %s (0x%X)", s, data->type);
+			log_trace("type = %s (0x%hhX)", s, data->type);
 		} else if (!strcmp(key, "p")) {
 			data->p = json_object_get_double(val);
 			log_trace("p = %G", data->p);

@@ -22,10 +22,10 @@ int delay_init(struct aylp_device *self)
 			// keys starting with _ are comments
 		} else if (!strcmp(key, "s")) {
 			ts->tv_sec = (time_t)json_object_get_uint64(val);
-			log_trace("s = %u", ts->tv_sec);
+			log_trace("s = %lu", ts->tv_sec);
 		} else if (!strcmp(key, "ns")) {
 			ts->tv_nsec = (long)json_object_get_int64(val);
-			log_trace("ns = %u", ts->tv_nsec);
+			log_trace("ns = %lu", ts->tv_nsec);
 		} else {
 			log_warn("Unknown parameter \"%s\"", key);
 		}

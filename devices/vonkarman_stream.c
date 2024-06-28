@@ -72,7 +72,7 @@ static int generate_phase_screen(struct aylp_device *self)
 	// by the spectrum as we go.
 	size_t M = data->phase_screen->size1;
 	size_t N = data->phase_screen->size2;
-	log_trace("Allocated %u by %u matrix for phase screen", M, N);
+	log_trace("Allocated %zu by %zu matrix for phase screen", M, N);
 	for (size_t x=0; x<M; x++) {
 		for (size_t y=0; y<N; y++) {
 			// von Kármán spectrum amplitude
@@ -188,25 +188,25 @@ int vonkarman_stream_init(struct aylp_device *self)
 			log_trace("pitch = %G", data->pitch);
 		} else if (!strcmp(key, "screen_size")) {
 			data->screen_size = json_object_get_uint64(val);
-			log_trace("screen_size = %u", data->screen_size);
+			log_trace("screen_size = %zu", data->screen_size);
 		} else if (!strcmp(key, "win_height")) {
 			data->win_height = json_object_get_uint64(val);
-			log_trace("win_height = %u", data->win_height);
+			log_trace("win_height = %zu", data->win_height);
 		} else if (!strcmp(key, "win_width")) {
 			data->win_width = json_object_get_uint64(val);
-			log_trace("win_width = %u", data->win_width);
+			log_trace("win_width = %zu", data->win_width);
 		} else if (!strcmp(key, "start_y")) {
 			data->cur_y = json_object_get_uint64(val);
-			log_trace("start_y = %u", data->cur_y);
+			log_trace("start_y = %zu", data->cur_y);
 		} else if (!strcmp(key, "start_x")) {
 			data->cur_x = json_object_get_uint64(val);
-			log_trace("start_x = %u", data->cur_x);
+			log_trace("start_x = %zu", data->cur_x);
 		} else if (!strcmp(key, "step_y")) {
 			data->cur_step_y = json_object_get_int(val);
-			log_trace("step_y = %u", data->cur_step_y);
+			log_trace("step_y = %d", data->cur_step_y);
 		} else if (!strcmp(key, "step_x")) {
 			data->cur_step_x = json_object_get_int(val);
-			log_trace("step_x = %u", data->cur_step_x);
+			log_trace("step_x = %d", data->cur_step_x);
 		} else {
 			log_warn("Unknown parameter \"%s\"", key);
 		}
@@ -306,7 +306,7 @@ int vonkarman_stream_process(struct aylp_device *self, struct aylp_state *state)
 	}
 	data->cur_y += data->cur_step_y;
 	data->cur_x += data->cur_step_x;
-	log_trace("Window at y,x indices %lu,%lu", data->cur_y, data->cur_x);
+	log_trace("Window at y,x indices %zu,%zu", data->cur_y, data->cur_x);
 	data->sub_view = gsl_matrix_submatrix(
 		data->phase_screen,
 		data->cur_y, data->cur_x,

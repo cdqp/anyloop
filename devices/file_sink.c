@@ -62,7 +62,7 @@ int file_sink_process(struct aylp_device *self, struct aylp_state *state)
 	n += fwrite(data->bytes.data, 1, data->bytes.size, data->fp);
 	size_t n_expect = sizeof(struct aylp_header) + data->bytes.size;
 	if (n < n_expect) {
-		log_error("Short write: %d of %d", n, n_expect);
+		log_error("Short write: %zu of %zu", n, n_expect);
 		return -1;
 	}
 	if (needs_free) {

@@ -80,17 +80,17 @@ int center_of_mass_init(struct aylp_device *self)
 			// keys starting with _ are comments
 		} else if (!strcmp(key, "region_height")) {
 			data->region_height = json_object_get_uint64(val);
-			log_trace("region_height = %llu", data->region_height);
+			log_trace("region_height = %zu", data->region_height);
 		} else if (!strcmp(key, "region_width")) {
 			data->region_width = json_object_get_uint64(val);
-			log_trace("region_width = %llu", data->region_width);
+			log_trace("region_width = %zu", data->region_width);
 		} else if (!strcmp(key, "thread_count")) {
 			data->thread_count = json_object_get_uint64(val);
 			if (data->thread_count == 0) {
 				log_error("Correcting 0 threads to 1 thread");
 				data->thread_count = 1;
 			}
-			log_trace("thread_count = %llu", data->thread_count);
+			log_trace("thread_count = %zu", data->thread_count);
 		} else {
 			log_warn("Unknown parameter \"%s\"", key);
 		}
@@ -116,7 +116,7 @@ int center_of_mass_init(struct aylp_device *self)
 				return -1;
 			}
 		}
-		log_info("Started %llu threads", data->thread_count);
+		log_info("Started %zu threads", data->thread_count);
 		self->process = &center_of_mass_process_threaded;
 		self->close = &center_of_mass_close_threaded;
 	} else {
@@ -144,7 +144,7 @@ int center_of_mass_process(struct aylp_device *self, struct aylp_state *state)
 	size_t subap_count = y_subap_count * x_subap_count;
 	if (UNLIKELY(!subap_count)) {
 		log_error("Refusing to process zero subapertures; "
-			"region size is %llu by %llu but image is %llu by %llu",
+			"region size is %zu by %zu but image is %zu by %zu",
 			data->region_height, data->region_width, max_y, max_x
 		);
 		return -1;
@@ -216,7 +216,7 @@ int center_of_mass_process_threaded(
 	size_t n_tasks = y_subap_count * x_subap_count;
 	if (!n_tasks) {
 		log_error("Refusing to process zero subapertures; "
-			"region size is %llu by %llu but image is %llu by %llu",
+			"region size is %zu by %zu but image is %zu by %zu",
 			data->region_height, data->region_width, max_y, max_x
 		);
 		return -1;

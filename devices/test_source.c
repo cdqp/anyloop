@@ -38,29 +38,29 @@ int test_source_init(struct aylp_device *self)
 			else if (!strcmp(s, "matrix_uchar"))
 				data->type = AYLP_T_MATRIX_UCHAR;
 			else log_error("Unrecognized type: %s", s);
-			log_trace("type = %s (0x%X)", s, data->type);
+			log_trace("type = %s (0x%hhX)", s, data->type);
 		} else if (!strcmp(key, "kind")) {
 			const char *s = json_object_get_string(val);
 			// TODO: add KIND_NOISE?
 			if (!strcmp(s, "constant")) data->kind = KIND_CONSTANT;
 			else if (!strcmp(s, "sine")) data->kind = KIND_SINE;
 			else log_error("Unrecognized kind: %s", s);
-			log_trace("kind = %s (0x%X)", s, data->kind);
+			log_trace("kind = %s (0x%hhX)", s, data->kind);
 		} else if (!strcmp(key, "size1")) {
 			data->size1 = json_object_get_uint64(val);
-			log_trace("size1 = %llu", data->size1);
+			log_trace("size1 = %zu", data->size1);
 		} else if (!strcmp(key, "size2")) {
 			data->size2 = json_object_get_uint64(val);
-			log_trace("size2 = %llu", data->size2);
+			log_trace("size2 = %zu", data->size2);
 		} else if (!strcmp(key, "frequency")) {
 			data->frequency = json_object_get_double(val);
-			log_trace("frequency = %E", data->frequency);
+			log_trace("frequency = %G", data->frequency);
 		} else if (!strcmp(key, "amplitude")) {
 			data->amplitude = json_object_get_double(val);
-			log_trace("amplitude = %E", data->amplitude);
+			log_trace("amplitude = %G", data->amplitude);
 		} else if (!strcmp(key, "offset")) {
 			data->offset = json_object_get_double(val);
-			log_trace("offset = %E", data->offset);
+			log_trace("offset = %G", data->offset);
 		} else {
 			log_warn("Unknown parameter \"%s\"", key);
 		}
