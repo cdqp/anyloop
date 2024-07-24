@@ -10,6 +10,11 @@
 
 enum { LOG_TRACE, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_FATAL };
 
+// if we're on old gcc and we don't have __FILE_NAME__, just use __FILE__
+#ifndef __FILE_NAME__
+#define __FILE_NAME__ __FILE__
+#endif
+
 // adds trailing newline
 #define log_trace(...) \
 	log_impl(LOG_TRACE, __FILE_NAME__, __LINE__, 1, __VA_ARGS__)
