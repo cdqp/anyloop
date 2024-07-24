@@ -19,7 +19,7 @@ void *alloc_check(void *ptr);
 #define xcalloc_type(type, ...) \
 	(type *)alloc_check(type##_calloc(__VA_ARGS__))
 #define xfree_type(type, ptr) \
-	type##_free(ptr); ptr=0
+	do { type##_free(ptr); ptr=0; } while (0)
 
 char *xstrdup(const char *str);
 
