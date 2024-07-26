@@ -20,10 +20,10 @@ struct aylp_udp_sink_data {
 int udp_sink_init(struct aylp_device *self);
 
 // process udp_sink device once per loop
-int udp_sink_process(struct aylp_device *self, struct aylp_state *state);
+int udp_sink_proc(struct aylp_device *self, struct aylp_state *state);
 
 // close udp_sink device when loop exits
-int udp_sink_close(struct aylp_device *self);
+int udp_sink_fini(struct aylp_device *self);
 
 #endif
 

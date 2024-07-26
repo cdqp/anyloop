@@ -25,15 +25,15 @@ struct aylp_clamp_data {
 // initialize clamp device
 int clamp_init(struct aylp_device *self);
 
-// different process() function for each type
-#define DECLARE_PROCESS(_, type) int clamp_process_##type( \
+// different proc() function for each type
+#define DECLARE_PROC(_, type) int clamp_proc_##type( \
 	struct aylp_device *self, struct aylp_state *state \
 );
-FOR_AYLP_CLAMP_TYPES(DECLARE_PROCESS)
-#undef DECLARE_PROCESS
+FOR_AYLP_CLAMP_TYPES(DECLARE_PROC)
+#undef DECLARE_PROC
 
 // close clamp device when loop exits
-int clamp_close(struct aylp_device *self);
+int clamp_fini(struct aylp_device *self);
 
 #endif
 

@@ -27,10 +27,10 @@ struct aylp_poke_data {
 int poke_init(struct aylp_device *self);
 
 // process poke device once per loop
-int poke_process(struct aylp_device *self, struct aylp_state *state);
+int poke_proc(struct aylp_device *self, struct aylp_state *state);
 
 // close poke device when loop exits
-int poke_close(struct aylp_device *self);
+int poke_fini(struct aylp_device *self);
 
 #endif
 

@@ -13,7 +13,7 @@ struct aylp_test_source_data {
 	// width of matrix, if applicable
 	size_t size2;
 	// frequency of sine oscillation, if applicable; units are radians per
-	// process() call
+	// proc() call
 	double frequency;
 	// amplitude of sine wave, if applicable
 	double amplitude;
@@ -33,10 +33,10 @@ struct aylp_test_source_data {
 int test_source_init(struct aylp_device *self);
 
 // process test_source device once per loop
-int test_source_process(struct aylp_device *self, struct aylp_state *state);
+int test_source_proc(struct aylp_device *self, struct aylp_state *state);
 
 // close test_source device when loop exits
-int test_source_close(struct aylp_device *self);
+int test_source_fini(struct aylp_device *self);
 
 #endif
 

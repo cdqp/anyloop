@@ -117,12 +117,12 @@ int center_of_mass_init(struct aylp_device *self)
 			}
 		}
 		log_info("Started %zu threads", data->thread_count);
-		self->process = &center_of_mass_process_threaded;
-		self->close = &center_of_mass_close_threaded;
+		self->proc = &center_of_mass_proc_threaded;
+		self->fini = &center_of_mass_fini_threaded;
 	} else {
 		// no threading
-		self->process = &center_of_mass_process;
-		self->close = &center_of_mass_close;
+		self->proc = &center_of_mass_proc;
+		self->fini = &center_of_mass_fini;
 	}
 
 	// set types and units
@@ -134,7 +134,7 @@ int center_of_mass_init(struct aylp_device *self)
 }
 
 
-int center_of_mass_process(struct aylp_device *self, struct aylp_state *state)
+int center_of_mass_proc(struct aylp_device *self, struct aylp_state *state)
 {
 	struct aylp_center_of_mass_data *data = self->device_data;
 	size_t max_y = state->matrix_uchar->size1;
@@ -192,14 +192,14 @@ int center_of_mass_process(struct aylp_device *self, struct aylp_state *state)
 }
 
 
-int center_of_mass_close(struct aylp_device *self)
+int center_of_mass_fini(struct aylp_device *self)
 {
 	xfree(self->device_data);
 	return 0;
 }
 
 
-int center_of_mass_process_threaded(
+int center_of_mass_proc_threaded(
 	struct aylp_device *self, struct aylp_state *state
 )
 {
@@ -224,7 +224,7 @@ int center_of_mass_process_threaded(
 	// It's unfortunately quite ugly that we malloc here, but it's the
 	// simplest fast solution I can think of to the issue of not knowing the
 	// size of state->matrix_uchar when init() is run. Remember that `data`
-	// is `calloc`ed so we are guaranteed to malloc on first process.
+	// is `calloc`ed so we are guaranteed to malloc on first proc.
 	if (data->n_tasks < n_tasks) {
 		// we *could* realloc instead of this free/malloc combo, but I
 		// expect free/malloc to be faster since we don't care about
@@ -279,7 +279,7 @@ int center_of_mass_process_threaded(
 }
 
 
-int center_of_mass_close_threaded(struct aylp_device *self)
+int center_of_mass_fini_threaded(struct aylp_device *self)
 {
 	struct aylp_center_of_mass_data *data = self->device_data;
 	shut_queue(&data->queue);

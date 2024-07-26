@@ -11,8 +11,8 @@ enum {KIND_CONSTANT=1, KIND_SINE=2};
 
 int test_source_init(struct aylp_device *self)
 {
-	self->process = &test_source_process;
-	self->close = &test_source_close;
+	self->proc = &test_source_proc;
+	self->fini = &test_source_fini;
 	self->device_data = xcalloc(1, sizeof(struct aylp_test_source_data));
 	struct aylp_test_source_data *data = self->device_data;
 
@@ -114,7 +114,7 @@ int test_source_init(struct aylp_device *self)
 }
 
 
-int test_source_process(struct aylp_device *self, struct aylp_state *state)
+int test_source_proc(struct aylp_device *self, struct aylp_state *state)
 {
 	struct aylp_test_source_data *data = self->device_data;
 
@@ -164,7 +164,7 @@ int test_source_process(struct aylp_device *self, struct aylp_state *state)
 }
 
 
-int test_source_close(struct aylp_device *self)
+int test_source_fini(struct aylp_device *self)
 {
 	struct aylp_test_source_data *data = self->device_data;
 	switch (data->type) {

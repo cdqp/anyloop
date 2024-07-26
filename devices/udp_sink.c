@@ -15,8 +15,8 @@
 
 int udp_sink_init(struct aylp_device *self)
 {
-	self->process = &udp_sink_process;
-	self->close = &udp_sink_close;
+	self->proc = &udp_sink_proc;
+	self->fini = &udp_sink_fini;
 	self->device_data = xcalloc(1, sizeof(struct aylp_udp_sink_data));
 	struct aylp_udp_sink_data *data = self->device_data;
 
@@ -78,7 +78,7 @@ int udp_sink_init(struct aylp_device *self)
 }
 
 
-int udp_sink_process(struct aylp_device *self, struct aylp_state *state)
+int udp_sink_proc(struct aylp_device *self, struct aylp_state *state)
 {
 	struct aylp_udp_sink_data *data = self->device_data;
 	// make data contiguous
@@ -112,7 +112,7 @@ int udp_sink_process(struct aylp_device *self, struct aylp_state *state)
 }
 
 
-int udp_sink_close(struct aylp_device *self)
+int udp_sink_fini(struct aylp_device *self)
 {
 	xfree(self->device_data);
 	return 0;

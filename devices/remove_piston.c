@@ -40,8 +40,8 @@ static int gsl_matrix_add_constant_copy(
 int remove_piston_init(struct aylp_device *self)
 {
 	self->device_data = xcalloc(1, sizeof(struct aylp_remove_piston_data));
-	self->process = &remove_piston_process;
-	self->close = &remove_piston_close;
+	self->proc = &remove_piston_proc;
+	self->fini = &remove_piston_fini;
 
 	// set types and units
 	self->type_in = AYLP_T_MATRIX;
@@ -53,7 +53,7 @@ int remove_piston_init(struct aylp_device *self)
 }
 
 
-int remove_piston_process(struct aylp_device *self, struct aylp_state *state)
+int remove_piston_proc(struct aylp_device *self, struct aylp_state *state)
 {
 	struct aylp_remove_piston_data *data = self->device_data;
 
@@ -83,7 +83,7 @@ int remove_piston_process(struct aylp_device *self, struct aylp_state *state)
 }
 
 
-int remove_piston_close(struct aylp_device *self)
+int remove_piston_fini(struct aylp_device *self)
 {
 	struct aylp_remove_piston_data *data = self->device_data;
 	xfree_type(gsl_matrix, data->res_m);

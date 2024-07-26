@@ -6,8 +6,8 @@
 
 int stop_after_count_init(struct aylp_device *self)
 {
-	self->process = &stop_after_count_process;
-	self->close = &stop_after_count_close;
+	self->proc = &stop_after_count_proc;
+	self->fini = &stop_after_count_fini;
 	self->device_data = xcalloc(1, sizeof(size_t));
 	size_t *count = self->device_data;
 	if (!self->params) {
@@ -37,7 +37,7 @@ int stop_after_count_init(struct aylp_device *self)
 }
 
 
-int stop_after_count_process(struct aylp_device *self, struct aylp_state *state)
+int stop_after_count_proc(struct aylp_device *self, struct aylp_state *state)
 {
 	size_t *count = (size_t *)self->device_data;
 	*count -= 1;
@@ -46,7 +46,7 @@ int stop_after_count_process(struct aylp_device *self, struct aylp_state *state)
 }
 
 
-int stop_after_count_close(struct aylp_device *self)
+int stop_after_count_fini(struct aylp_device *self)
 {
 	UNUSED(self);
 	return 0;

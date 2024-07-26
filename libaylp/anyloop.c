@@ -30,8 +30,8 @@ static void cleanup(void)
 {
 	for (size_t idx=0; idx<conf.n_devices; idx++) {
 		struct aylp_device *dev = &conf.devices[idx];
-		if (dev->close) {
-			dev->close(dev);
+		if (dev->fini) {
+			dev->fini(dev);
 			log_trace("Closed %s", dev->uri);
 		}
 		if (dev->params) {
@@ -257,10 +257,10 @@ int main(int argc, char **argv)
 	while (!sigint_received && state.header.status ^ AYLP_DONE) {
 		for (size_t d=0; !sigint_received && d<conf.n_devices; d++) {
 			struct aylp_device *dev = &conf.devices[d];
-			if (dev->process) {
+			if (dev->proc) {
 				if (profile_mode)
 					profile_begin_for_device(&profile, d);
-				err = dev->process(dev, &state);
+				err = dev->proc(dev, &state);
 				if (profile_mode)
 					profile_end_for_device(&profile, d);
 

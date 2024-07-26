@@ -19,13 +19,13 @@ struct aylp_matmul_data {
 int matmul_init(struct aylp_device *self);
 
 // matrix-matrix product
-int matmul_process_mm(struct aylp_device *self, struct aylp_state *state);
+int matmul_proc_mm(struct aylp_device *self, struct aylp_state *state);
 
 // matrix-vector product
-int matmul_process_mv(struct aylp_device *self, struct aylp_state *state);
+int matmul_proc_mv(struct aylp_device *self, struct aylp_state *state);
 
 // close matmul device when loop exits
-int matmul_close(struct aylp_device *self);
+int matmul_fini(struct aylp_device *self);
 
 #endif
 

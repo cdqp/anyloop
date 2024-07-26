@@ -15,7 +15,7 @@ syntax of such a config file is like so:
 
 At the top level of the JSON file, there is a `pipeline` array, in which devices
 are added. Beyond doing some initialization at startup or destruction in the
-end, devices will run a "process" function in the order they are added to the
+end, devices will run a "proc" function in the order they are added to the
 pipeline. What that processing looks like depends on the device; some might
 acquire data to the pipeline, some might modify data in the pipeline, and some
 might write data from the pipeline to an instrument or the internet, etc.
@@ -35,8 +35,8 @@ look quite complex, but should probably comprise at least the following steps:
    signal;
 3. a device to apply the correction signal stored in the pipeline state.
 
-Devices 1, 2, and 3 above would then be processed in order indefinitely until
-anyloop was interrupted.
+Devices 1, 2, and 3 above would then proc in order indefinitely until anyloop
+was interrupted.
 
 See [devices.md](devices.md) for further documentation on how devices work.
 
@@ -60,7 +60,7 @@ Let's start by passing in a very simple conf file, with just one device:
 ```
 
 Save this file as `test.json` and run it with `anyloop -pl trace test.json`. You
-should see a trace of the `anyloop:delay` device being processed ten times a
+should see a trace of the `anyloop:delay` device being procced ten times a
 second. Let's add an `anyloop:logger` to print the pipeline state.
 
 ```json

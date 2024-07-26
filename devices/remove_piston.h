@@ -13,10 +13,10 @@ struct aylp_remove_piston_data {
 int remove_piston_init(struct aylp_device *self);
 
 // process remove_piston once per loop
-int remove_piston_process(struct aylp_device *self, struct aylp_state *state);
+int remove_piston_proc(struct aylp_device *self, struct aylp_state *state);
 
 // close remove_piston device when loop exits
-int remove_piston_close(struct aylp_device *self);
+int remove_piston_fini(struct aylp_device *self);
 
 #endif
 

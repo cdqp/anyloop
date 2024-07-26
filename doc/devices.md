@@ -7,8 +7,8 @@ Anyloop uses a plugin-like syntax to add devices to a loop.
 Anatomy of a device
 -------------------
 
-See the `aylp_device` struct in `anyloop.h`. Devices have init and close
-functions that each run once, and a process function that runs once every loop.
+See the `aylp_device` struct in `anyloop.h`. Devices have init and fini
+functions that each run once, and a proc function that runs once every loop.
 Some ground rules:
 
  1. Devices must free any memory they allocate.
@@ -17,7 +17,7 @@ Some ground rules:
     (for example) should *never* be the only pointer to its data; otherwise,
     that's just begging for a memory leak.
  4. If devices fail to do their job, they must return a nonzero error code from
-    `process()`. This is especially important if the device was supposed to
+    `proc()`. This is especially important if the device was supposed to
     change the pipeline type.
  5. Devices should self-document their parameters and accepted/outputted
    `aylp_type`s and `aylp_units`, either in their header files or in separate
@@ -64,7 +64,7 @@ Note that we strip off anything including and after the first `.` character in
 the basename, so a device with a basename of `blah.a.b.c` should have an init
 function named `blah_init`.
 
-This function can then attach whatever process() and close() functions it wishes
+This function can then attach whatever proc() and fini() functions it wishes
 to its own `aylp_device` struct.
 
 

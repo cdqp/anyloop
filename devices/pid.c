@@ -9,8 +9,8 @@
 int pid_init(struct aylp_device *self)
 {
 	int err;
-	self->process = &pid_process;
-	self->close = &pid_close;
+	self->proc = &pid_proc;
+	self->fini = &pid_fini;
 	self->device_data = xcalloc(1, sizeof(struct aylp_pid_data));
 	struct aylp_pid_data *data = self->device_data;
 
@@ -61,7 +61,7 @@ int pid_init(struct aylp_device *self)
 	}
 
 	// allocate dummy vectors or matrices so we can skip checking if they
-	// exist in process()
+	// exist in proc()
 	switch (data->type) {
 	case AYLP_T_VECTOR:
 		data->acc_v = xmalloc_type(gsl_vector, 0);
@@ -90,7 +90,7 @@ int pid_init(struct aylp_device *self)
 }
 
 
-int pid_process(struct aylp_device *self, struct aylp_state *state)
+int pid_proc(struct aylp_device *self, struct aylp_state *state)
 {
 	int err;
 	struct aylp_pid_data *data = self->device_data;
@@ -213,7 +213,7 @@ int pid_process(struct aylp_device *self, struct aylp_state *state)
 }
 
 
-int pid_close(struct aylp_device *self)
+int pid_fini(struct aylp_device *self)
 {
 	struct aylp_pid_data *data = self->device_data;
 	switch (data->type) {

@@ -38,12 +38,10 @@ struct aylp_vonkarman_stream_data {
 int vonkarman_stream_init(struct aylp_device *self);
 
 // process vonkarman_stream device once per loop
-int vonkarman_stream_process(
-	struct aylp_device *self, struct aylp_state *state
-);
+int vonkarman_stream_proc(struct aylp_device *self, struct aylp_state *state);
 
 // close vonkarman_stream device when loop exits
-int vonkarman_stream_close(struct aylp_device *self);
+int vonkarman_stream_fini(struct aylp_device *self);
 
 #endif
 

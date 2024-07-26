@@ -10,8 +10,8 @@
 
 int poke_init(struct aylp_device *self)
 {
-	self->process = &poke_process;
-	self->close = &poke_close;
+	self->proc = &poke_proc;
+	self->fini = &poke_fini;
 	self->device_data = xcalloc(1, sizeof(struct aylp_poke_data));
 	struct aylp_poke_data *data = self->device_data;
 
@@ -53,7 +53,7 @@ int poke_init(struct aylp_device *self)
 }
 
 
-int poke_process(struct aylp_device *self, struct aylp_state *state)
+int poke_proc(struct aylp_device *self, struct aylp_state *state)
 {
 	struct aylp_poke_data *data = self->device_data;
 	int err;
@@ -153,7 +153,7 @@ int poke_process(struct aylp_device *self, struct aylp_state *state)
 }
 
 
-int poke_close(struct aylp_device *self)
+int poke_fini(struct aylp_device *self)
 {
 	struct aylp_poke_data *data = self->device_data;
 	xfree_type(gsl_matrix, data->poke_matrix);

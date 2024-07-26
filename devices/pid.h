@@ -32,10 +32,10 @@ struct aylp_pid_data {
 int pid_init(struct aylp_device *self);
 
 // process pid device once per loop
-int pid_process(struct aylp_device *self, struct aylp_state *state);
+int pid_proc(struct aylp_device *self, struct aylp_state *state);
 
 // close pid device when loop exits
-int pid_close(struct aylp_device *self);
+int pid_fini(struct aylp_device *self);
 
 #endif
 

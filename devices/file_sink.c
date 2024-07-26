@@ -9,8 +9,8 @@
 
 int file_sink_init(struct aylp_device *self)
 {
-	self->process = &file_sink_process;
-	self->close = &file_sink_close;
+	self->proc = &file_sink_proc;
+	self->fini = &file_sink_fini;
 	self->device_data = xcalloc(1, sizeof(struct aylp_file_sink_data));
 	struct aylp_file_sink_data *data = self->device_data;
 	if (!self->params) {
@@ -50,7 +50,7 @@ int file_sink_init(struct aylp_device *self)
 }
 
 
-int file_sink_process(struct aylp_device *self, struct aylp_state *state)
+int file_sink_proc(struct aylp_device *self, struct aylp_state *state)
 {
 	struct aylp_file_sink_data *data = self->device_data;
 	// write the header
@@ -75,7 +75,7 @@ int file_sink_process(struct aylp_device *self, struct aylp_state *state)
 }
 
 
-int file_sink_close(struct aylp_device *self)
+int file_sink_fini(struct aylp_device *self)
 {
 	struct aylp_file_sink_data *data = self->device_data;
 	fflush(data->fp);

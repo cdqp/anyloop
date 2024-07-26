@@ -158,8 +158,8 @@ static int generate_phase_screen(struct aylp_device *self)
 
 int vonkarman_stream_init(struct aylp_device *self)
 {
-	self->process = &vonkarman_stream_process;
-	self->close = &vonkarman_stream_close;
+	self->proc = &vonkarman_stream_proc;
+	self->fini = &vonkarman_stream_fini;
 	self->device_data = xcalloc(1,
 		sizeof(struct aylp_vonkarman_stream_data)
 	);
@@ -286,7 +286,7 @@ int vonkarman_stream_init(struct aylp_device *self)
 }
 
 
-int vonkarman_stream_process(struct aylp_device *self, struct aylp_state *state)
+int vonkarman_stream_proc(struct aylp_device *self, struct aylp_state *state)
 {
 	// move along the screen, not calculating wind speed, just relying on
 	// any delay devices to set the speed
@@ -325,7 +325,7 @@ int vonkarman_stream_process(struct aylp_device *self, struct aylp_state *state)
 }
 
 
-int vonkarman_stream_close(struct aylp_device *self)
+int vonkarman_stream_fini(struct aylp_device *self)
 {
 	struct aylp_vonkarman_stream_data *data = self->device_data;
 	xfree_type(gsl_rng, data->rng);

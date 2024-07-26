@@ -12,24 +12,29 @@
 
 // Stop clang from complaining about json_object_object_foreach()
 #ifdef __clang__
-#pragma clang diagnostic ignored \
-	"-Wgnu-statement-expression-from-macro-expansion"
+	#pragma clang diagnostic ignored \
+		"-Wgnu-statement-expression-from-macro-expansion"
+#endif
+
+// C23 deprecated _Static_assert in favor of static_assert
+#ifndef static_assert
+#define static_assert _Static_assert
 #endif
 
 // So as to not shoot ourselves in the foot when compiling for different
 // platforms, we need to specify that certain types are the right size.
 #if __STDC_VERSION__ > 201710L
 	#ifndef __STDC_IEC_60559_BFP__
-	_Static_assert(0, "we require IEEE-754 binary floats");
+	static_assert(0, "we require IEEE-754 binary floats");
 	#endif
 #else
 	#ifndef __STDC_IEC_559__
-	_Static_assert(0, "we require IEC559 floats");
+	static_assert(0, "we require iec559 floats");
 	#endif
 #endif
-_Static_assert(sizeof(unsigned char) == 1,
+static_assert(sizeof(unsigned char) == 1,
 	"we need unsigned char to be 8-bit for gsl");
-_Static_assert(sizeof(size_t) == 8, "we need size_t to be 64-bit for gsl");
+static_assert(sizeof(size_t) == 8, "we need size_t to be 64-bit for gsl");
 
 #define UNUSED(x)	(void)(x)
 #define LIKELY(x)	__builtin_expect((x),1)
@@ -81,13 +86,15 @@ typedef uint8_t aylp_units;
 enum {
 	/** Indicates that there is no data in the pipeline yet. */
 	AYLP_U_NONE	= 1 << 0,
-	/** Signals that the units are in radians. */
-	AYLP_U_RAD	= 1 << 1,
-	/** Signals that the units are in [-1,+1]. */
-	AYLP_U_MINMAX	= 1 << 2,
 	/** Signals that the units are natural numbers.
 	* For example, pixel values. */
-	AYLP_U_COUNTS	= 1 << 3,
+	AYLP_U_COUNTS	= 1 << 1,
+	/** Signals that the units are in [-1,+1]. */
+	AYLP_U_MINMAX	= 1 << 2,
+	/** Signals that the units are in radians. */
+	AYLP_U_RAD	= 1 << 3,
+	/** Signals that the units are in volts. */
+	AYLP_U_V	= 1 << 4,
 	/** Used to signal compatibility with any units. */
 	AYLP_U_ANY	= 0xFF,
 	// add more as necessary
@@ -102,9 +109,9 @@ enum {
 
 /**
  * Status of loop and header for saved data files.
- * Saved data files will use this as a header (see file_sink_process()), and
- * it's also good to have the rest of this info during the loop, so devices and
- * get and set the status of the overall system.
+ * Saved data files will use this as a header (see file_sink_proc()), and it's
+ * also good to have the rest of this info during the loop, so devices and get
+ * and set the status of the overall system.
  */
 struct aylp_header {
 	/** Magic number to verify from another end (for endianness, etc.) */
@@ -120,7 +127,7 @@ struct aylp_header {
 	* For example, commands to a DM might usually be seen as vectors, but
 	* in reality have some logical x,y dimensions, which can be important.
 	*/
-	struct {
+	struct __attribute__((packed)) {
 		uint64_t y;
 		uint64_t x;
 	} log_dim;
@@ -128,7 +135,7 @@ struct aylp_header {
 	/** Physical distance between successive logical rows and columns.
 	* (In units of meters.)
 	*/
-	struct {
+	struct __attribute__((packed)) {
 		double y;
 		double x;
 	} pitch;
@@ -164,7 +171,7 @@ struct aylp_state {
 
 /** Device struct.
  * How this is interpreted is up to the specific device. Devices are expected to
- * attach their process() and close() functions upon initialization, if such
+ * attach their proc() and fini() functions upon initialization, if such
  * functions are needed.
  */
 struct aylp_device {
@@ -203,11 +210,11 @@ struct aylp_device {
 
 	/** Processing function.
 	* Called once every loop when it's the device's turn. */
-	int (*process)(struct aylp_device *self, struct aylp_state *state);
+	int (*proc)(struct aylp_device *self, struct aylp_state *state);
 
 	/** Destructor function.
 	* Devices are closed in pipeline order when the program exits. */
-	int (*close)(struct aylp_device *self);
+	int (*fini)(struct aylp_device *self);
 
 	/** Optional pointer to allow devices to store private data. */
 	void *device_data;

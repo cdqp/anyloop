@@ -99,16 +99,16 @@ int matmul_init(struct aylp_device *self)
 
 	switch (self->type_in) {
 	case AYLP_T_MATRIX:
-		self->process = &matmul_process_mm;
+		self->proc = &matmul_proc_mm;
 		break;
 	case AYLP_T_VECTOR:
-		self->process = &matmul_process_mv;
+		self->proc = &matmul_proc_mv;
 		break;
 	default:
 		log_error("BUG: self->type_in is wrong");
 		return -1;
 	}
-	self->close = &matmul_close;
+	self->fini = &matmul_fini;
 
 	// set types and units
 	self->units_in = AYLP_U_ANY;
@@ -119,7 +119,7 @@ int matmul_init(struct aylp_device *self)
 }
 
 
-int matmul_process_mm(struct aylp_device *self, struct aylp_state *state)
+int matmul_proc_mm(struct aylp_device *self, struct aylp_state *state)
 {
 	struct aylp_matmul_data *data = self->device_data;
 
@@ -161,7 +161,7 @@ int matmul_process_mm(struct aylp_device *self, struct aylp_state *state)
 }
 
 
-int matmul_process_mv(struct aylp_device *self, struct aylp_state *state)
+int matmul_proc_mv(struct aylp_device *self, struct aylp_state *state)
 {
 	struct aylp_matmul_data *data = self->device_data;
 
@@ -194,7 +194,7 @@ int matmul_process_mv(struct aylp_device *self, struct aylp_state *state)
 }
 
 
-int matmul_close(struct aylp_device *self)
+int matmul_fini(struct aylp_device *self)
 {
 	struct aylp_matmul_data *data = self->device_data;
 	xfree_type(gsl_matrix, data->mat);

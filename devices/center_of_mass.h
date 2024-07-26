@@ -30,15 +30,15 @@ struct aylp_center_of_mass_data {
 int center_of_mass_init(struct aylp_device *self);
 
 // process center_of_mass device once per loop
-int center_of_mass_process(struct aylp_device *self, struct aylp_state *state);
-// multithreaded version of process function
-int center_of_mass_process_threaded(
+int center_of_mass_proc(struct aylp_device *self, struct aylp_state *state);
+// multithreaded version of proc function
+int center_of_mass_proc_threaded(
 	struct aylp_device *self, struct aylp_state *state
 );
 
 // close center_of_mass device when loop exits
-int center_of_mass_close(struct aylp_device *self);
-int center_of_mass_close_threaded(struct aylp_device *self);
+int center_of_mass_fini(struct aylp_device *self);
+int center_of_mass_fini_threaded(struct aylp_device *self);
 
 #endif
 

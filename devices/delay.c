@@ -8,8 +8,8 @@
 
 int delay_init(struct aylp_device *self)
 {
-	self->process = &delay_process;
-	self->close = &delay_close;
+	self->proc = &delay_proc;
+	self->fini = &delay_fini;
 	self->device_data = xcalloc(1, sizeof(struct timespec));
 	struct timespec *ts = self->device_data;
 	if (!self->params) {
@@ -39,7 +39,7 @@ int delay_init(struct aylp_device *self)
 }
 
 
-int delay_process(struct aylp_device *self, struct aylp_state *state)
+int delay_proc(struct aylp_device *self, struct aylp_state *state)
 {
 	UNUSED(state);
 	nanosleep((struct timespec *)self->device_data, 0);
@@ -47,7 +47,7 @@ int delay_process(struct aylp_device *self, struct aylp_state *state)
 }
 
 
-int delay_close(struct aylp_device *self)
+int delay_fini(struct aylp_device *self)
 {
 	xfree(self->device_data);
 	return 0;

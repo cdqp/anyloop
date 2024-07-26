@@ -10,7 +10,7 @@ int clamp_init(struct aylp_device *self)
 	self->device_data = xcalloc(1, sizeof(struct aylp_clamp_data));
 	struct aylp_clamp_data *data = self->device_data;
 
-	self->close = &clamp_close;
+	self->fini = &clamp_fini;
 
 	// default to ±1
 	data->min = -1.0;
@@ -47,7 +47,7 @@ int clamp_init(struct aylp_device *self)
 	// type-specific setup
 	#define INIT_CASE_TYPE(TYPE, type) \
 	case AYLP_T_##TYPE: \
-		self->process = &clamp_process_##type; \
+		self->proc = &clamp_proc_##type; \
 		break;
 	FOR_AYLP_CLAMP_TYPES(INIT_CASE_TYPE)
 	default:
@@ -62,7 +62,7 @@ int clamp_init(struct aylp_device *self)
 }
 
 
-int clamp_process_block(struct aylp_device *self, struct aylp_state *state)
+int clamp_proc_block(struct aylp_device *self, struct aylp_state *state)
 {
 	struct aylp_clamp_data *data = self->device_data;
 	if (UNLIKELY(!data->block)) {
@@ -85,7 +85,7 @@ int clamp_process_block(struct aylp_device *self, struct aylp_state *state)
 	return 0;
 }
 
-int clamp_process_vector(struct aylp_device *self, struct aylp_state *state)
+int clamp_proc_vector(struct aylp_device *self, struct aylp_state *state)
 {
 	struct aylp_clamp_data *data = self->device_data;
 	if (UNLIKELY(!data->vector)) {
@@ -106,7 +106,7 @@ int clamp_process_vector(struct aylp_device *self, struct aylp_state *state)
 	return 0;
 }
 
-int clamp_process_matrix(struct aylp_device *self, struct aylp_state *state)
+int clamp_proc_matrix(struct aylp_device *self, struct aylp_state *state)
 {
 	struct aylp_clamp_data *data = self->device_data;
 	gsl_matrix *src = state->matrix;
@@ -132,7 +132,7 @@ int clamp_process_matrix(struct aylp_device *self, struct aylp_state *state)
 	return 0;
 }
 
-int clamp_process_block_uchar(
+int clamp_proc_block_uchar(
 	struct aylp_device *self, struct aylp_state *state
 ){
 	struct aylp_clamp_data *data = self->device_data;
@@ -162,7 +162,7 @@ int clamp_process_block_uchar(
 	return 0;
 }
 
-int clamp_process_matrix_uchar(
+int clamp_proc_matrix_uchar(
 	struct aylp_device *self, struct aylp_state *state
 ){
 	struct aylp_clamp_data *data = self->device_data;
@@ -194,7 +194,7 @@ int clamp_process_matrix_uchar(
 }
 
 
-int clamp_close(struct aylp_device *self)
+int clamp_fini(struct aylp_device *self)
 {
 	struct aylp_clamp_data *data = self->device_data;
 	#define FREE_RESULT(_, type) \

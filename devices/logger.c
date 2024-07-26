@@ -6,8 +6,8 @@
 
 int logger_init(struct aylp_device *self)
 {
-	self->process = &logger_process;
-	self->close = &logger_close;
+	self->proc = &logger_proc;
+	self->fini = &logger_fini;
 	log_info("logger initialized");
 	// set types and units
 	self->type_in = AYLP_T_ANY;
@@ -18,7 +18,7 @@ int logger_init(struct aylp_device *self)
 }
 
 
-int logger_process(struct aylp_device *self, struct aylp_state *state)
+int logger_proc(struct aylp_device *self, struct aylp_state *state)
 {
 	UNUSED(self);
 	switch (state->header.type) {
@@ -50,7 +50,7 @@ int logger_process(struct aylp_device *self, struct aylp_state *state)
 }
 
 
-int logger_close(struct aylp_device *self)
+int logger_fini(struct aylp_device *self)
 {
 	UNUSED(self);
 	log_info("logger closed");
