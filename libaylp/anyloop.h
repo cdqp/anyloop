@@ -75,6 +75,15 @@ enum {
 	AYLP_T_ANY	= 0xFF,
 	// add more as necessary
 };
+// https://en.wikipedia.org/wiki/X_macro
+#define FOR_AYLP_TYPES(DO) \
+	DO(AYLP_T_NONE, none) \
+	DO(AYLP_T_BLOCK, block) \
+	DO(AYLP_T_VECTOR, vector) \
+	DO(AYLP_T_MATRIX, matrix) \
+	DO(AYLP_T_BLOCK_UCHAR, block_uchar) \
+	DO(AYLP_T_MATRIX_UCHAR, matrix_uchar) \
+	DO(AYLP_T_ANY, any)
 
 
 /** Enum for units of data in aylp_state.
@@ -99,6 +108,13 @@ enum {
 	AYLP_U_ANY	= 0xFF,
 	// add more as necessary
 };
+#define FOR_AYLP_UNITS(DO) \
+	DO(AYLP_U_NONE, none) \
+	DO(AYLP_U_COUNTS, counts) \
+	DO(AYLP_U_MINMAX, minmax) \
+	DO(AYLP_U_RAD, rad) \
+	DO(AYLP_U_V, V) \
+	DO(AYLP_U_ANY, any)
 
 
 /** Little-endian representation of "AYLP" as a magic number. */
@@ -233,16 +249,28 @@ struct aylp_conf {
 };
 
 
-/** Convert a string to a type.
- * @param type_name: the string holding the type name (e.g. "vector")
+/** Convert a string to a pure type. Case insensitive.
+ * @param type_name: the string holding the type name (e.g. "vector").
  */
 aylp_type aylp_type_from_string(const char *type_name);
 
 
-/** Convert a type to its name as a string.
- * @param type: the string holding the type name (e.g. "vector")
+/** Convert a pure type to its name as a string. Returns lowercase.
+ * @param type: the type to convert (e.g. AYLP_T_VECTOR).
  */
 const char *aylp_type_to_string(aylp_type type);
+
+
+/** Convert a string to the pure units it represents. Case insensitive.
+ * @param units_name: the string holding the units (e.g. "rad").
+ */
+aylp_units aylp_units_from_string(const char *units_name);
+
+
+/** Convert pure units to their name as a string. Mixed case (e.g. rad, V).
+ * @param units: the units to convert (e.g. AYLP_U_RAD).
+ */
+const char *aylp_units_to_string(aylp_units units);
 
 
 #endif	// include guard

@@ -51,12 +51,9 @@ static void cleanup(void)
 
 aylp_type aylp_type_from_string(const char *type_name)
 {
-	if (!strcasecmp(type_name, "none")) return AYLP_T_NONE;
-	if (!strcasecmp(type_name, "block")) return AYLP_T_BLOCK;
-	if (!strcasecmp(type_name, "vector")) return AYLP_T_VECTOR;
-	if (!strcasecmp(type_name, "matrix")) return AYLP_T_MATRIX;
-	if (!strcasecmp(type_name, "block_uchar")) return  AYLP_T_BLOCK_UCHAR;
-	if (!strcasecmp(type_name, "matrix_uchar")) return AYLP_T_MATRIX_UCHAR;
+	#define AYLP_TYPE_FROM_STRING_MATCH_TYPE(TYPE, type) \
+	if (!strcasecmp(type_name, #type)) return TYPE;
+	FOR_AYLP_TYPES(AYLP_TYPE_FROM_STRING_MATCH_TYPE)
 
 	log_error("Couldn't parse type: %s", type_name);
 	return AYLP_T_NONE;
@@ -65,22 +62,40 @@ aylp_type aylp_type_from_string(const char *type_name)
 const char *aylp_type_to_string(aylp_type type)
 {
 	switch (type) {
-	case AYLP_T_BLOCK:
-		return "block";
-	case AYLP_T_VECTOR:
-		return "vector";
-	case AYLP_T_MATRIX:
-		return "matrix";
-	case AYLP_T_BLOCK_UCHAR:
-		return "block_uchar";
-	case AYLP_T_MATRIX_UCHAR:
-		return "matrix_uchar";
+	#define AYLP_TYPE_TO_STRING_MATCH_TYPE(TYPE, type) \
+	case TYPE: \
+		return #type; \
+		break;
+	FOR_AYLP_TYPES(AYLP_TYPE_TO_STRING_MATCH_TYPE)
 	default:
 		log_error("Unknown type 0x%hhX", type);
 		return "NONE";
 	}
 }
 
+aylp_units aylp_units_from_string(const char *units_name)
+{
+	#define AYLP_UNITS_FROM_STRING_MATCH_UNITS(UNITS, units) \
+	if (!strcasecmp(units_name, #units)) return UNITS;
+	FOR_AYLP_UNITS(AYLP_UNITS_FROM_STRING_MATCH_UNITS)
+
+	log_error("Couldn't parse units: %s", units_name);
+	return AYLP_U_NONE;
+}
+
+const char *aylp_units_to_string(aylp_units units)
+{
+	switch (units) {
+	#define AYLP_UNITS_TO_STRING_MATCH_UNITS(UNITS, units) \
+	case UNITS: \
+		return #units; \
+		break;
+	FOR_AYLP_UNITS(AYLP_UNITS_TO_STRING_MATCH_UNITS)
+	default:
+		log_error("Unknown units 0x%hhX", units);
+		return "NONE";
+	}
+}
 
 
 static void handle_signal(int sig, siginfo_t *info, void *context)

@@ -36,6 +36,10 @@ int pid_init(struct aylp_device *self)
 				data->type = AYLP_T_MATRIX;
 			else log_error("Unrecognized type: %s", s);
 			log_trace("type = %s (0x%hhX)", s, data->type);
+		} else if (!strcmp(key, "units")) {
+			const char *s = json_object_get_string(val);
+			data->units = aylp_units_from_string(s);
+			log_trace("units = %s (0x%hhX)", s, data->units);
 		} else if (!strcmp(key, "p")) {
 			data->p = json_object_get_double(val);
 			log_trace("p = %G", data->p);
@@ -85,7 +89,7 @@ int pid_init(struct aylp_device *self)
 	self->type_in = data->type;
 	self->units_in = AYLP_U_ANY;
 	self->type_out = 0;
-	self->units_out = 0;
+	self->units_out = data->units;
 	return 0;
 }
 

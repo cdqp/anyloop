@@ -7,6 +7,8 @@
 struct aylp_pid_data {
 	// param type in ["vector", "matrix"]
 	aylp_type type;
+	// units to output
+	aylp_units units;
 	// accumulated error
 	union {
 		gsl_vector *acc_v;

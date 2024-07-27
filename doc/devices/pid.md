@@ -26,6 +26,8 @@ Parameters
 - `type` (string) (required)
   - "vector" if we are expecting `T_VECTOR` input, and "matrix" if we are
     expecting `T_MATRIX` input.
+- `units` (string) (optional)
+  - Output units, e.g. "V", "rad", etc. Defaults to null (unchanged from input).
 - `p` (float) (optional)
   - Coefficent for proportional correction (see equation above). Defaults
     to 1.0.
