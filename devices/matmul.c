@@ -9,47 +9,9 @@
 #include "xalloc.h"
 
 
-int matmul_init(struct aylp_device *self)
+static int load_matrix_from_file(gsl_matrix **mat, const char *filename)
 {
 	int err;
-	self->device_data = xcalloc(1, sizeof(struct aylp_matmul_data));
-	struct aylp_matmul_data *data = self->device_data;
-
-	// input filename
-	const char *filename = 0;
-	// so we can check if we got a type
-	self->type_in = AYLP_T_NONE;
-
-	// parse the params json into our data struct
-	if (!self->params) {
-		log_error("No params object found.");
-		return -1;
-	}
-	json_object_object_foreach(self->params, key, val) {
-		if (key[0] == '_') {
-			// keys starting with _ are comments
-		} else if (!strcmp(key, "filename")) {
-			filename = json_object_get_string(val);
-			log_trace("filename = %s", filename);
-		} else if (!strcmp(key, "type")) {
-			const char *s = json_object_get_string(val);
-			if (!strcmp(s, "vector"))
-				self->type_in = AYLP_T_VECTOR;
-			else if (!strcmp(s, "matrix"))
-				self->type_in = AYLP_T_MATRIX;
-			else log_error("Unrecognized type: %s", s);
-			log_trace("type = %s (0x%X)", s, self->type_in);
-		} else {
-			log_warn("Unknown parameter \"%s\"", key);
-		}
-	}
-
-	// make sure we didn't miss any params
-	if (!filename || self->type_in == AYLP_T_NONE) {
-		log_error("You must provide the filename and type params.");
-		return -1;
-	}
-
 	// open input file
 	FILE *fp = fopen(filename, "r");
 	if (!fp) {
@@ -80,14 +42,123 @@ int matmul_init(struct aylp_device *self)
 		return -1;
 	}
 	// allocate and grab data
-	data->mat = gsl_matrix_alloc(head.log_dim.y, head.log_dim.x);
-	err = gsl_matrix_fread(fp, data->mat);
+	*mat = gsl_matrix_alloc(head.log_dim.y, head.log_dim.x);
+	err = gsl_matrix_fread(fp, *mat);
 	if (err) {
 		log_error("Error in reading matrix: ", gsl_strerror(err));
 		return -1;
 	}
 	// close input file
 	fclose(fp);
+	return 0;
+}
+
+
+static int load_matrix_from_json(gsl_matrix **mat, json_object *json_mat)
+{
+	errno = 0;
+	if (!json_object_is_type(json_mat, json_type_array)) {
+		log_error("Matrix passed in json must be a json array");
+		return -1;
+	}
+
+	size_t M = json_object_array_length(json_mat);
+	size_t N = 0;
+
+	json_object *row;
+	json_object *element;
+	for (size_t i = 0; i < M; i++) {
+		row = json_object_array_get_idx(json_mat, i);
+		if (!json_object_is_type(row, json_type_array)) {
+			log_error("Row %zu of matrix is not an array", i);
+			return -1;
+		}
+		size_t N_this = json_object_array_length(row);
+		if (!N) {
+			N = N_this;
+			*mat = gsl_matrix_alloc(M, N);
+			log_trace("Matrix is %zu by %zu", M, N);
+		} else if (N_this != N) {
+			log_error("Row %zu of matrix has length %zu, "
+				"but previous rows had length %zu", i, N_this, N
+			);
+			return -1;
+		}
+		for (size_t j = 0; j < N; j++) {
+			element = json_object_array_get_idx(row, j);
+			double x = json_object_get_double(element);
+			if (x != x) {
+				log_error("Found NaN at %llu,%llu", i, j);
+				if (errno) {
+					log_error("(errno was %d: %s)",
+						errno, strerror(errno)
+					);
+				}
+				return -1;
+			}
+			gsl_matrix_set(*mat, i, j, x);
+		}
+	}
+
+	return 0;
+}
+
+
+int matmul_init(struct aylp_device *self)
+{
+	int err;
+	self->device_data = xcalloc(1, sizeof(struct aylp_matmul_data));
+	struct aylp_matmul_data *data = self->device_data;
+
+	// json array for matrix passed in config file
+	json_object *json_mat = 0;
+	// or, filename for aylp file
+	const char *filename = 0;
+	// so we can check if we got a type
+	self->type_in = AYLP_T_NONE;
+
+	// parse the params json into our data struct
+	if (!self->params) {
+		log_error("No params object found.");
+		return -1;
+	}
+	json_object_object_foreach(self->params, key, val) {
+		if (key[0] == '_') {
+			// keys starting with _ are comments
+		} else if (!strcmp(key, "matrix")) {
+			json_mat = val;
+			err = load_matrix_from_json(&data->mat, json_mat);
+			if (err) return err;
+			log_trace("Read matrix from json");
+		} else if (!strcmp(key, "filename")) {
+			filename = json_object_get_string(val);
+			log_trace("filename = %s", filename);
+			err = load_matrix_from_file(&data->mat, filename);
+			if (err) return err;
+		} else if (!strcmp(key, "type")) {
+			const char *s = json_object_get_string(val);
+			if (!strcmp(s, "vector"))
+				self->type_in = AYLP_T_VECTOR;
+			else if (!strcmp(s, "matrix"))
+				self->type_in = AYLP_T_MATRIX;
+			else log_error("Unrecognized type: %s", s);
+			log_trace("type = %s (0x%X)", s, self->type_in);
+		} else {
+			log_warn("Unknown parameter \"%s\"", key);
+		}
+	}
+
+	// make sure we didn't miss any params
+	if (!data->mat) {
+		log_error(
+			"No matrix provided. Check filename and matrix params."
+		);
+		return -1;
+	}
+	if (self->type_in == AYLP_T_NONE) {
+		log_error("You must provide the type param.");
+		return -1;
+	}
 
 	if (log_get_level() <= LOG_INFO) {
 		// INFO: log matrix contents
