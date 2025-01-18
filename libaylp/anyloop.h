@@ -34,6 +34,8 @@
 #endif
 static_assert(sizeof(unsigned char) == 1,
 	"we need unsigned char to be 8-bit for gsl");
+static_assert(sizeof(unsigned short) == 2,
+	"we need unsigned short to be 16-bit for gsl");
 static_assert(sizeof(size_t) == 8, "we need size_t to be 64-bit for gsl");
 
 #define UNUSED(x)	(void)(x)
@@ -69,6 +71,8 @@ enum {
 	AYLP_T_BLOCK_UCHAR	= 1 << 4,
 	/** For gsl_matrix_uchar. */
 	AYLP_T_MATRIX_UCHAR	= 1 << 5,
+	/** For gsl_matrix_ushort. */
+	AYLP_T_MATRIX_USHORT	= 1 << 6,
 	/** Used to signal compatibility with any (gsl) type.
 	* Devices must also set AYLP_U_ANY to be compatible with any aylp_type.
 	*/
