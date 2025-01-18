@@ -24,10 +24,10 @@ println("listening on $(args["port"]) ...")
 
 for i in 1:100
     recvbytes = IOBuffer(recv(sock))
-    data = read(recvbytes, AYLP_Data)
+    chunk = read(recvbytes, AYLPChunk)
     #println(data.data)
     #display(plot(data.data))
-    display(heatmap(data.data))
+    display(heatmap(chunk.data))
 end
 
 close(sock)

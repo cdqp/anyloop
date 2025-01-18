@@ -2,10 +2,84 @@
 
 module Anyloop
 
-export AYLP_Header, AYLP_Data
+import FITSIO
+import FITSIO: ImageHDU
 
-struct AYLP_Header
-    magic::Vector{UInt8}
+
+export AYLP_MAGIC, AYLP_SCHEMA_VERSION,
+    AYLPStatus,
+    AYLP_DONE,
+    AYLPType,
+    AYLP_T_NONE,
+    AYLP_T_BLOCK,
+    AYLP_T_VECTOR,
+    AYLP_T_MATRIX,
+    AYLP_T_BLOCK_UCHAR,
+    AYLP_T_MATRIX_UCHAR,
+    AYLP_T_ANY,
+    AYLPUnits,
+    AYLP_U_NONE,
+    AYLP_U_RAD,
+    AYLP_U_MINMAX,
+    AYLP_U_COUNTS,
+    AYLP_U_ANY
+
+# https://discourse.julialang.org/t/export-enum/5396/4
+#= can't get this to work right
+macro exported_enum(name, args...)
+    if length(args) == 1 && args[1] isa Expr && args[1].head == :block
+        # handle the begin ... end block syntax
+        block = args[1]
+        # filter out comments from the block
+        enum_members = filter(x -> x isa Symbol, block.args)
+        return esc(quote
+            @enum $name begin
+                $(enum_members...)
+            end
+            export $name
+            $([:(export $arg) for arg in enum_members]...)
+        end)
+    else
+        # handle the standard @enum syntax
+        return esc(quote
+            @enum($name, $(args...))
+            export $name
+            $([:(export $arg) for arg in args]...)
+        end)
+    end
+end
+=#
+
+AYLP_MAGIC::UInt32 = 0x504C5941
+AYLP_SCHEMA_VERSION::UInt8 = 0
+
+@enum AYLPStatus begin
+    AYLP_DONE = 1 << 0
+end
+
+@enum AYLPType begin
+    AYLP_T_NONE = 1 << 0
+    AYLP_T_BLOCK = 1 << 1
+    AYLP_T_VECTOR = 1 << 2
+    AYLP_T_MATRIX = 1 << 3
+    AYLP_T_BLOCK_UCHAR = 1 << 4
+    AYLP_T_MATRIX_UCHAR = 1 << 5
+    AYLP_T_ANY = 0xFF
+end
+
+@enum AYLPUnits begin
+    AYLP_U_NONE = 1 << 0
+    AYLP_U_RAD = 1 << 1
+    AYLP_U_MINMAX = 1 << 2
+    AYLP_U_COUNTS = 1 << 3
+    AYLP_U_ANY = 0xFF
+end
+
+
+export AYLPHeader, AYLPChunk, AYLPFile
+
+struct AYLPHeader
+    magic::UInt32
     aylp_version::UInt8
     aylp_status::UInt8
     aylp_type::UInt8
@@ -16,22 +90,20 @@ struct AYLP_Header
     pitch_x::Float64
 end
 
-struct AYLP_Data
-    head::AYLP_Header
+struct AYLPChunk
+    head::AYLPHeader
     data::Union{
         Matrix{Float64},    # for gsl_block, gsl_vector, or gsl_matrix
         Matrix{UInt8},      # for gsl_block_uchar or gsl_matrix_uchar
     }
 end
 
-# TODO: optimize read() to be faster
 
-function Base.read(io::IO, ::Type{AYLP_Header})
-    magic = Vector{UInt8}(undef, 4)
-    for i in 1:4
-        magic[i] = read(io, UInt8)
-    end
-    @assert String(magic) == "AYLP";
+# TODO: optimize read() to be faster; don't read so many separate times from io
+
+function Base.read(io::IO, ::Type{AYLPHeader})
+    magic = read(io, UInt32)
+    @assert magic == AYLP_MAGIC
     aylp_version = read(io, UInt8)
     aylp_status = read(io, UInt8)
     aylp_units = read(io, UInt8)
@@ -40,33 +112,31 @@ function Base.read(io::IO, ::Type{AYLP_Header})
     log_dim_x = read(io, UInt64)
     pitch_y = read(io, Float64)
     pitch_x = read(io, Float64)
-    return AYLP_Header(
+    return AYLPHeader(
         magic, aylp_version, aylp_status, aylp_units, aylp_type,
         log_dim_y, log_dim_x, pitch_y, pitch_x
     )
 end
 
-function Base.read(io::IO, ::Type{AYLP_Data})
-    head = read(io, AYLP_Header)
+function Base.read(io::IO, ::Type{AYLPChunk})
+    head = read(io, AYLPHeader)
     size = head.log_dim_y * head.log_dim_x
-    if head.aylp_type in [1<<1, 1<<2, 1<<3]
-        # block/vector/matrix
+    if AYLPType(head.aylp_type) in [AYLP_T_VECTOR, AYLP_T_BLOCK, AYLP_T_MATRIX]
         data = Vector{Float64}(undef, size)
         for i in 1:size
             data[i] = read(io, Float64)
         end
-        return AYLP_Data(head,
+        return AYLPChunk(head,
             # we have to do this tricky transpose of reshape() because anyloop
             # uses row-major ordering, and julia uses column-major
             Matrix{Float64}(reshape(data, (head.log_dim_x, head.log_dim_y))')
         )
-    elseif head.aylp_type in [1<<4, 1<<5]
-        # block_uchar/matrix_uchar
+    elseif AYLPType(head.aylp_type) in [AYLP_T_BLOCK_UCHAR, AYLP_T_MATRIX_UCHAR]
         data = Vector{UInt8}(undef, size)
         for i in 1:size
             data[i] = read(io, UInt8)
         end
-        return AYLP_Data(head,
+        return AYLPChunk(head,
             # same deal with column-major
             Matrix{UInt8}(reshape(data, (head.log_dim_x, head.log_dim_y))')
         )
@@ -75,5 +145,5 @@ function Base.read(io::IO, ::Type{AYLP_Data})
     end
 end
 
-end
+end # module
 

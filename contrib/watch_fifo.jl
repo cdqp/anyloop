@@ -20,8 +20,8 @@ fifo = open(fifo_path, "r+");
 println("pipe opened; waiting for data ...")
 
 while true
-    data = read(fifo, AYLP_Data)
-    display(heatmap(data.data))
+    chunk = read(fifo, AYLPChunk)
+    display(heatmap(chunk.data))
 end
 
 close(fifo)
