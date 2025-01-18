@@ -34,7 +34,7 @@ example, the built-in device to generate von Kármán streams has the path
 
 To add a new built-in device:
 
- 1. write `src/devices/$MYDEVICE.c` and `src/devices/$MYDEVICE.h`
+ 1. write `devices/$MYDEVICE.c` and `devices/$MYDEVICE.h`
  2. modify `device.h` to include the header file
  3. add the device's initialization function to the init map in `device.h`
  4. add the new files to meson.build
