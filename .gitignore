@@ -1,3 +1,7 @@
-# meson output
+# build system output
 build
+.cache
+
+# place to put testing data, etc
+notrack
 
