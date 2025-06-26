@@ -2,10 +2,6 @@
 
 module Anyloop
 
-import FITSIO
-import FITSIO: ImageHDU
-
-
 export AYLP_MAGIC, AYLP_SCHEMA_VERSION,
     AYLPStatus,
     AYLP_DONE,
