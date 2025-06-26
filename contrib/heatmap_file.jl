@@ -14,7 +14,7 @@ end
 args = parse_args(argset)
 
 f = open(args["file"], "r");
-data = read(f, AYLP_Data)
+data = read(f, AYLPChunk)
 display(heatmap(data.data))
 
 sleep(60*10)

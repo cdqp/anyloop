@@ -33,8 +33,8 @@ l = vcat([repeat([i], M) for i in 1:L]...)
 m = repeat(1:M, L)
 
 for i in 1:10000
-    data0 = read(IOBuffer(recv(sock0)), AYLP_Data)
-    data1 = read(IOBuffer(recv(sock1)), AYLP_Data)
+    data0 = read(IOBuffer(recv(sock0)), AYLPChunk)
+    data1 = read(IOBuffer(recv(sock1)), AYLPChunk)
 
     heatmap(data0.data, aspect_ratio=:equal, size=(800,800))
 
