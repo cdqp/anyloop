@@ -74,7 +74,7 @@ end
 
 export AYLPHeader, AYLPChunk, AYLPFile
 
-struct AYLPHeader
+mutable struct AYLPHeader
     magic::UInt32
     aylp_version::UInt8
     aylp_status::UInt8
@@ -86,7 +86,7 @@ struct AYLPHeader
     pitch_x::Float64
 end
 
-struct AYLPChunk
+mutable struct AYLPChunk
     head::AYLPHeader
     data::Union{
         Matrix{Float64},    # for gsl_block, gsl_vector, or gsl_matrix
@@ -138,6 +138,49 @@ function Base.read(io::IO, ::Type{AYLPChunk})
         )
     else
         throw(ArgumentError("unknown type $(head.aylp_type)"))
+    end
+end
+
+function Base.write(io::IO, x::AYLPHeader)
+    @assert x.magic == AYLP_MAGIC
+    n = write(io, x.magic)
+    n += write(io, x.aylp_version)
+    n += write(io, x.aylp_status)
+    n += write(io, x.aylp_type)
+    n += write(io, x.aylp_units)
+    n += write(io, x.log_dim_y)
+    n += write(io, x.log_dim_x)
+    n += write(io, x.pitch_y)
+    n += write(io, x.pitch_x)
+    @assert n == sizeof(AYLPHeader)
+    return n
+end
+
+# TODO: a lot of this is kinda sloppy tbh, make it faster if it ever matters
+
+function Base.write(io::IO, x::AYLPChunk)
+    n = write(io, x.head)
+    size = x.head.log_dim_y * x.head.log_dim_x
+    if AYLPType(x.head.aylp_type) in [
+        AYLP_T_VECTOR, AYLP_T_BLOCK, AYLP_T_MATRIX
+    ]
+        @assert x.data isa Matrix{Float64}
+        for r in eachrow(x.data)
+            n += write(io, r)
+        end
+        @assert n == sizeof(AYLPHeader) + 8 * size
+        return n
+    elseif AYLPType(x.head.aylp_type) in [
+        AYLP_T_BLOCK_UCHAR, AYLP_T_MATRIX_UCHAR
+    ]
+        @assert x.data isa Matrix{UInt8}
+        for r in eachrow(x.data)
+            n += write(io, r)
+        end
+        @assert n == sizeof(AYLPHeader) + size
+        return n
+    else
+        throw(ArgumentError("unknown type $(x.head.aylp_type)"))
     end
 end
 
