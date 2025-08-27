@@ -46,8 +46,8 @@ int remove_piston_init(struct aylp_device *self)
 	// set types and units
 	self->type_in = AYLP_T_MATRIX;
 	self->units_in = AYLP_U_ANY;
-	self->type_out = 0;
-	self->units_out = 0;
+	self->type_out = AYLP_T_UNCHANGED;
+	self->units_out = AYLP_U_UNCHANGED;
 
 	return 0;
 }

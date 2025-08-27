@@ -88,7 +88,7 @@ int pid_init(struct aylp_device *self)
 	// set types and units
 	self->type_in = data->type;
 	self->units_in = AYLP_U_ANY;
-	self->type_out = 0;
+	self->type_out = AYLP_T_UNCHANGED;
 	self->units_out = data->units;
 	return 0;
 }

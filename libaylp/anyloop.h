@@ -59,6 +59,8 @@ enum {
  */
 typedef uint8_t aylp_type;
 enum {
+	/** As device output, indicates that type is unchanged from before. */
+	AYLP_T_UNCHANGED	= 0,
 	/** Indicates that there is no data in the pipeline yet. */
 	AYLP_T_NONE		= 1 << 0,
 	/** For gsl_block. */
@@ -81,6 +83,7 @@ enum {
 };
 // https://en.wikipedia.org/wiki/X_macro
 #define FOR_AYLP_TYPES(DO) \
+	DO(AYLP_T_UNCHANGED, unchanged) \
 	DO(AYLP_T_NONE, none) \
 	DO(AYLP_T_BLOCK, block) \
 	DO(AYLP_T_VECTOR, vector) \
@@ -92,27 +95,29 @@ enum {
 
 /** Enum for units of data in aylp_state.
  * After being initialized, devices must specify the units they are capable of
- * inputting and the units they may output. Null is a special type that means
- * "unaltered" when set as a device output.
+ * inputting and the units they may output.
  */
 typedef uint8_t aylp_units;
 enum {
+	/** As device output, indicates that units are unchanged from before. */
+	AYLP_U_UNCHANGED	= 0,
 	/** Indicates that there is no data in the pipeline yet. */
-	AYLP_U_NONE	= 1 << 0,
+	AYLP_U_NONE		= 1 << 0,
 	/** Signals that the units are natural numbers.
 	* For example, pixel values. */
-	AYLP_U_COUNTS	= 1 << 1,
+	AYLP_U_COUNTS		= 1 << 1,
 	/** Signals that the units are in [-1,+1]. */
-	AYLP_U_MINMAX	= 1 << 2,
+	AYLP_U_MINMAX		= 1 << 2,
 	/** Signals that the units are in radians. */
-	AYLP_U_RAD	= 1 << 3,
+	AYLP_U_RAD		= 1 << 3,
 	/** Signals that the units are in volts. */
-	AYLP_U_V	= 1 << 4,
+	AYLP_U_V		= 1 << 4,
 	/** Used to signal compatibility with any units. */
-	AYLP_U_ANY	= 0xFF,
+	AYLP_U_ANY		= 0xFF,
 	// add more as necessary
 };
 #define FOR_AYLP_UNITS(DO) \
+	DO(AYLP_U_UNCHANGED, unchanged) \
 	DO(AYLP_U_NONE, none) \
 	DO(AYLP_U_COUNTS, counts) \
 	DO(AYLP_U_MINMAX, minmax) \
