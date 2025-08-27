@@ -230,7 +230,7 @@ struct aylp_device {
 	struct json_object *params;
 
 	/** Initializer function.
-	* Devices are initialized in pipeline order at program startup. */
+	* Called once per device in pipeline order at program startup. */
 	int (*init)(struct aylp_device *self);
 
 	/** Processing function.
@@ -238,7 +238,8 @@ struct aylp_device {
 	int (*proc)(struct aylp_device *self, struct aylp_state *state);
 
 	/** Destructor function.
-	* Devices are closed in pipeline order when the program exits. */
+	* Called once per device in pipeline order before the program exits.
+	* Can be null, in which case it will not be called. */
 	int (*fini)(struct aylp_device *self);
 
 	/** Optional pointer to allow devices to store private data. */

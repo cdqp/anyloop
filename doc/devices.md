@@ -9,7 +9,9 @@ Anatomy of a device
 
 See the `aylp_device` struct in `anyloop.h`. Devices have init and fini
 functions that each run once, and a proc function that runs once every loop.
-Some ground rules:
+For each device, `init()` is called once before the loop starts, `fini()` (if
+not null) is called once after the loop is done running, and `proc()` is called
+once per loop iteration Some ground rules:
 
  1. Devices must free any memory they allocate.
  2. Devices must not free any memory they didn't allocate.
